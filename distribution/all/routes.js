@@ -74,6 +74,16 @@ const routes = function (_0x3f6816) {
                 'service': _0x22d749[_0x5b8ba2(0x149)],
                 'method': _0x22d749[_0x5b8ba2(0x14b)]
             }, _0x54443a);
+        },
+        'del': (_0x135cc8, _0x54443a) => {
+            const _0x5b8ba2 = _0xeb3f72;
+            // global.distribution.[gid]s.comm.send
+            global[_0x5b8ba2(0x144)][_0x24f539[_0x5b8ba2(0x150)]][_0x5b8ba2(0x151)][_0x5b8ba2(0x143)]([
+                _0x135cc8
+            ], {
+                'service': _0x22d749[_0x5b8ba2(0x149)],
+                'method': 'del'
+            }, _0x54443a);
         }
     };
 };

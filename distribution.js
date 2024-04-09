@@ -68,4 +68,9 @@ if (require.main === module) {
 }
 
 // libraries for map reduce workflows
-global.https = require('https');
+const https = require('https');
+const {URL} = require('url');
+const {JSDOM} = require('jsdom');
+global.https = https;
+global.URL = URL;
+global.JSDOM = JSDOM;

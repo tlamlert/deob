@@ -53,22 +53,23 @@ const mr = function(config) {
         const mapOutput = [];
         keys.forEach((key) => {
           groupService.store.get(key, (e, value) => {
-            const output = this.mapper(key, value);
-            mapOutput.push(output);
-            counter -= 1;
-            if (!counter) {
-              // store in memory or write to local storage
-              if (this.memory) {
-                this.mapOutput = mapOutput;
-                callback(null, mapOutput);
-              } else {
-                localService.store.put(mapOutput,
-                    this.mrName + 'mapOutput',
-                    () => {
-                      callback(null, mapOutput);
-                    });
+            Promise.resolve(this.mapper(key, value)).then(((output) => {
+              mapOutput.push(output);
+              counter -= 1;
+              if (!counter) {
+                // store in memory or write to local storage
+                if (this.memory) {
+                  this.mapOutput = mapOutput;
+                  callback(null, mapOutput);
+                } else {
+                  localService.store.put(mapOutput,
+                      this.mrName + 'mapOutput',
+                      () => {
+                        callback(null, mapOutput);
+                      });
+                }
               }
-            }
+            }));
           });
         });
       };

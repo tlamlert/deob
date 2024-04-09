@@ -7,65 +7,99 @@ const mr = function(config) {
   return {
     exec: (configuration, callback) => {
       /* Change this with your own exciting Map Reduce code! */
-      const mrName = 'mr-' + util.id.getSID(configuration);
-      const mrService = {
-        // metadata
-        mrName: mrName,
-        gid: context.gid,
-        mapper: configuration.map,
-        reducer: configuration.reduce,
 
-        init: function(callback=()=>{}) {
+      // define the map-reduce service
+      const mrName = 'mr-' + util.id.getSID(configuration);
+      const mrService = configuration;
+
+      // metadata
+      mrService.mrName = mrName;
+      mrService.gid = context.gid;
+      mrService.mapper = configuration.map;
+      mrService.reducer = configuration.reduce;
+
+      // libraries
+      mrService.https = require('https');
+
+      // methods
+      mrService.init = function(callback=()=>{}) {
+        // support variables for in-memory operation
+        if (this.memory) {
           this.mapOutput = [];
-          this.reduceInput = new Map();
-          
-          // mapping from nid to sid
-          global.distribution.local.groups.get(this.gid, (err, nodes) => {
-            this.nodes = nodes;
-            this.nidToSid = {};
-            Object.keys(nodes).forEach((sid) => {
-              this.nidToSid[util.id.getNID(nodes[sid])] = sid;
-            });
+        }
+        this.reduceInput = new Map();
+
+        // mapping from nid to sid
+        global.distribution.local.groups.get(this.gid, (err, nodes) => {
+          this.nodes = nodes;
+          this.nidToSid = {};
+          Object.keys(nodes).forEach((sid) => {
+            this.nidToSid[util.id.getNID(nodes[sid])] = sid;
           });
           callback(null, null);
-        },
+        });
+      };
 
-        map: function(keys, callback=()=>{}) {
-          const groupService = global.distribution[this.gid];
-          var counter = keys.length;
-          if (!counter) {
-            callback(null, this.mapOutput);
-            return;
-          }
+      mrService.mapNofify = function(keys, callback=()=>{}) {
+        const groupService = global.distribution[this.gid];
+        const localService = global.distribution.local;
+        var counter = keys.length;
+        if (!counter) {
+          callback(null, []);
+          return;
+        }
 
-          // map each object and store the result in memory
-          keys.forEach((key) => {
-            groupService.store.get(key, (e, value) => {
-              const output = this.mapper(key, value);
-              this.mapOutput.push(output);
-              counter -= 1;
-              if (!counter) {
-                callback(null, this.mapOutput);
+        // map each object and store the result in memory
+        const mapOutput = [];
+        keys.forEach((key) => {
+          groupService.store.get(key, (e, value) => {
+            const output = this.mapper(key, value);
+            mapOutput.push(output);
+            counter -= 1;
+            if (!counter) {
+              // store in memory or write to local storage
+              if (this.memory) {
+                this.mapOutput = mapOutput;
+                callback(null, mapOutput);
+              } else {
+                localService.store.put(mapOutput,
+                    this.mrName + 'mapOutput',
+                    () => {
+                      callback(null, mapOutput);
+                    });
               }
-            });
+            }
           });
-        },
+        });
+      };
+
+      mrService.shuffleNotify = function(callback=()=>{}) {
+        const localService = global.distribution.local;
+
+        // read intermediate result from memory or local storage
+        const getIntermediateResult = (cb) => {
+          if (this.memory) {
+            cb(this.mapOutput.flat());
+          } else {
+            localService.store.get(this.mrName + 'mapOutput', (e, v) => {
+              cb(v.flat());
+            });
+          }
+        };
 
         // find host node by key and context.hash
         // nodes are {sid: nodeConfig}
-        getRemoteHost: function(key) {
+        const getRemoteHost = (key) => {
           const hostNid = util.id.consistentHash(
               util.id.getID(key),
               Object.keys(this.nidToSid));
           return this.nodes[this.nidToSid[hostNid]];
-        },
+        };
 
-        shuffle: function(callback=()=>{}) {
-          const localService = global.distribution.local;
-          const intermediateResult = this.mapOutput.flat();
+        getIntermediateResult((intermediateResult) => {
           var counter = intermediateResult.length;
           if (!counter) {
-            callback(null, this.mapOutput);
+            callback(null, intermediateResult);
             return;
           }
 
@@ -74,7 +108,7 @@ const mr = function(config) {
             const key = Object.keys(output)[0];
             const value = output[key];
             const remote = {
-              node: this.getRemoteHost(key),
+              node: getRemoteHost(key),
               service: this.mrName,
               method: 'reducePut'};
 
@@ -85,23 +119,23 @@ const mr = function(config) {
               }
             });
           });
-        },
+        });
+      },
 
-        reducePut: function(key, value, callback=()=>{}) {
-          // aggreate values from shuffling
-          if (this.reduceInput.has(key)) {
-            this.reduceInput.get(key).push(value);
-          } else {
-            this.reduceInput.set(key, [value]);
-          }
-          callback(null, [key, value]);
-        },
+      mrService.reducePut = function(key, value, callback=()=>{}) {
+        // aggreate values from shuffling
+        if (this.reduceInput.has(key)) {
+          this.reduceInput.get(key).push(value);
+        } else {
+          this.reduceInput.set(key, [value]);
+        }
+        callback(null, [key, value]);
+      },
 
-        reduce: function(callback=()=>{}) {
-          const result = [...this.reduceInput.entries()].map(
-              (args) => this.reducer(...args));
-          callback(null, result);
-        },
+      mrService.reduceNotify = function(callback=()=>{}) {
+        const result = [...this.reduceInput.entries()].map(
+            (args) => this.reducer(...args));
+        callback(null, result);
       };
 
       // Setup, Map, and Reduce
@@ -111,10 +145,10 @@ const mr = function(config) {
         groupService.comm.send([], initNotify, (e, v) => {
           distributeKeys(configuration.keys, (keysByNodeMap) => {
             mapNotifyWorkers(keysByNodeMap, () => {
-              const shuffleNotify = {service: mrName, method: 'shuffle'};
+              const shuffleNotify = {service: mrName, method: 'shuffleNotify'};
               groupService.comm.send([], shuffleNotify, (e, v) => {
                 console.log('map output: ', v);
-                const reduceNotify = {service: mrName, method: 'reduce'};
+                const reduceNotify = {service: mrName, method: 'reduceNotify'};
                 groupService.comm.send([], reduceNotify, (e, v) => {
                   console.log('reduce output: ', v);
                   const result = Object.values(v).flat();
@@ -128,7 +162,7 @@ const mr = function(config) {
           });
         });
       });
-      
+
       // distribute keys evenly by slicing the key array into equal length
       function distributeKeys(keys, callback=()=>{}) {
         global.distribution.local.groups.get(context.gid, (err, nodes) => {
@@ -139,14 +173,14 @@ const mr = function(config) {
           const remainder = totalNumKeys % numNodes;
           var counter = 0;
           var nextKey = 0;
-          
+
           // construct the mapping from node info to keys
           const keysByNodeMap = new Map();
           Object.keys(nodes).forEach((nid) => {
             const node = {ip: nodes[nid].ip, port: nodes[nid].port};
             const numKeys = keysPerNode + (counter++ < remainder? 1 : 0);
             keysByNodeMap.set(node, keys.slice(nextKey, nextKey + numKeys));
-            nextKey += numKeys
+            nextKey += numKeys;
           });
           callback(keysByNodeMap);
         });
@@ -156,7 +190,7 @@ const mr = function(config) {
       function mapNotifyWorkers(keysByNodeMap, callback=()=>{}) {
         var counter = keysByNodeMap.size;
         keysByNodeMap.forEach((keys, node) => {
-          const mapNotify = {node: node, service: mrName, method: 'map'};
+          const mapNotify = {node: node, service: mrName, method: 'mapNofify'};
           global.distribution.local.comm.send([keys], mapNotify, (e, v) => {
             counter -= 1;
             if (!counter) {

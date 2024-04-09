@@ -14,12 +14,11 @@
   },
   "scripts": {
     "test": "jest --maxWorkers 1",
-    "lint": "eslint --ignore-path .gitignore ."
+    "lint": "eslint --ignore-path .gitignore . --fix"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "node-fetch": "^3.3.2",
     "yargs": "^17.7.2"
   }
 }

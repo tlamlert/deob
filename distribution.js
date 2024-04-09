@@ -66,3 +66,6 @@ module.exports = global.distribution;
 if (require.main === module) {
   distribution.node.start(global.nodeConfig.onStart);
 }
+
+// libraries for map reduce workflows
+global.https = require('https');

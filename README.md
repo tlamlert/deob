@@ -1,35 +1,65 @@
-# M5: Distributed Execution Engine
-> Full name: `Tiger Lamlertprasertkul`
-> Email:  `tanadol_lamlertprasertkul@brown.edu`
-> Username:  `tlamlert`
+# Yellow Poop Stain 💩🚽
+This is Helen, Tiger, JZ, and Mandy's project.
 
-## Summary
-> Summarize your implementation, including key challenges you encountered
+## TODO's
+1. Extend `distribution.js` to take in a list of IP addresses as an extra argument
+    * nodeConfig.start must communicate with all nodes (specified by the input IP addresses), passing its own ip address (TODO: is it possible to get the ip address of the current EC2 instance???) maybe via comm.send
+    * If we have time (lmao): implement routes.connect() to support adding new nodes to the already established distributed system.
+    * 
 
-My implementation comprises `1` new software components, totaling `364` added lines of code over the previous implementation. I also implemented `3` MapReduce workflows in `all.student.test.js`. Key challenges included
-1. MapReduce implementation. Workers must be synchornized across different phases to ensure the consistency of a MapReduce workflow. This is achieved by the -notify services that implement the execution of the map, shuffle, and reduce phases.
-2. Key distribution. Keys should be uniformly distributed across all nodes. Currently, the input keys are split using their original order. A better approach is use consistent hashing implemented in the previous milestone.
-3. Workflow implementation. Advanced MapReduce workflows might need access to external libraries. Since our serialization library does not provide support for import statements nested inside another function, we must provide access to these external libraries by declaring access to them `distribution.js`
+2. The private key `jz-key.pem` is needed to SSH into the EC2 instance. We could create multiple users on the server to avoid passing on the private key. https://stackoverflow.com/a/55222064
+3. Deploy the server on 0.0.0.0:port_num, meaning the server listens on all interfaces
+    * Is it possible to get the exact interface we should be listening on instead of 0.0.0.0? Something about an private(internal) IP address. https://stackoverflow.com/questions/33953447/express-app-server-listen-all-interfaces-instead-of-localhost-only
 
-## Correctness & Performance Characterization
-> Describe how you characterized the correctness and performance of your implementation
+How do we control what workflow to run and when?
 
-*Correctness*: The distributed MapReduce implementation is tested using example workflow against local execution to ensure the correctness of the distributed computation.
+## Useful Code Snippets
+### Setup script for a new EC2 instance
+```shell
+sudo apt update
+sudo apt install nodejs git vim
+git clone https://github.com/tlamlert/m6.git
+sudo apt install npm
+```
 
-*Performance*: The perfomance of the MapReduce implementation can be evaluated by measuring the execution time of example workflows on the distribution implementation and the local sequential execution.
+### Manually Sending a Request to a Node (manual `comm.send`)
+1. Start the node server and expose it to the public internet by running `node distribution.js --ip "0.0.0.0"`
+2. Send a request to the node server (from a remote machine in the same network) by running the following command:
+    ```shell
+    curl -X PUT http://<public-ip-address>:<port>/status/get -H "Content-Type: application/json" -d '{}'
+    ```
 
-## Key Feature
-> Which extra features did you implement and how?
-In memeory operation. Intermediate results are stored in memory using the keyword `this`. They can be accessed using the same keywork. This eliminates the need to store intermediate results in file system.
+```shell
+# Start a node server
+node distribution.js --ip '127.0.0.1' --neighbors <ip_address_1>,<ip_address_2>,...
 
-> What workflows did you implement and how?
-I implemented 3 workflows in `all.student.test.js`. The 3 workflows are crawler, URL extraction, and distributed string matching.
-* In crawler, I made the mapper function asynchronous by using Promise in JavaScript. The mapper is responsible for fetching the page content and store it in a separate group distribution `extract`. The reducer merely aggragates the number of times each URL in the input is fetched. Pages crawled in this step will be used in URL extraction in the next step
-* In URL extraction, I use two libraries `URL` and `JSDOM` to construct the corresponding DOM objects and extract URLs on the page. Notice that the mapper function is not asynchronous since the `exec` method in MapReduce implementation is responsible for retrieving the object for this function. Similarly, the reducer merely aggregates the number of occcurence each link appears in total across all URLs.
-* The distribution string matching is quite simple. The mapper is responsible for all Regex expression evaluation. The reduce aggragates the number of occurences.
+# Neighbors must be comma separated because shell script arguments are split by white spaces
+# https://stackoverflow.com/questions/45589583/how-to-get-ip-adress-from-aws-ec2-command
+const yargs = require('yargs/yargs');
+yargs('node distribution.js --neighbors 0.0.0.0,1.1.1.1').parse();
+```
 
-## Time to Complete
-> Roughly, how many hours did this milestone take you to complete?
+```shell
+# https://stackoverflow.com/questions/38679346/get-public-ip-address-on-current-ec2-instance
+# IP addresses under this account?
+aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --output text | 
+    paste -sd, # joins all lines into a single line
 
-Hours: `20 hrs`
+# The private IP address is available via:
+$ curl http://169.254.169.254/latest/meta-data/local-ipv4
+
+# The private IP address is available via:
+$ curl http://169.254.169.254/latest/meta-data/public-ipv4
+```
+
+```js
+function main() {
+  console.log("Hello world!");
+}
+```
+
+```python
+def main():
+    print("Hello world!")
+```
 

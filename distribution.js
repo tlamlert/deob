@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 const util = require('./distribution/util/util.js');
 const args = require('yargs').argv;
 
@@ -10,6 +9,7 @@ global.nodeConfig = global.nodeConfig || {
   onStart: () => {
     console.log('Node started!');
   },
+  neighbors: [] // List of IP Addr's of other nodes (ports are hardcoded to be the same)
 };
 
 /*
@@ -34,6 +34,13 @@ if (args.config) {
         nodeConfig.port : global.nodeConfig.port;
   global.nodeConfig.onStart = nodeConfig.onStart ?
         nodeConfig.onStart : global.nodeConfig.onStart;
+}
+
+if (args.neighbors) {
+  // TODO: args.neighbors is a list of addresses split by a comma
+  // just need to split on commas!
+  global.nodeConfig.neighbors = args.neighbors;
+  console.log("global.nodeConfig.neighbors", global.nodeConfig.neighbors)
 }
 
 const distribution = {

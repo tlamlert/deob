@@ -133,6 +133,6 @@ const server = http.createServer((req, res) => {
         res.end(distribution.util.serialize(new Error('Method not allowed!')));
     }
 });
-global.listen(serverConfig.port, serverConfig.ip, () => {
+server.listen(serverConfig.port, serverConfig.ip, () => {
     console.log(`Engine listening on ${erverConfig.ip}:${serverConfig.port}`);
 })

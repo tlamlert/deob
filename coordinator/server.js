@@ -5,7 +5,11 @@
 const http = require('http');
 const distribution = require('../distribution.js');
 const utils = require("./utils.js");
+const URL = require('url');
+const { JSDOM } = require('jsdom');
 global.distribution = distribution;
+global.URL = URL;
+global.JSDOM = JSDOM;
 
 // =======================================
 //          Import workflows

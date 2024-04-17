@@ -11,7 +11,7 @@
 
 const crawl = {};
 
-crawl[map] = (url, _) => {
+crawl['map'] = (url, _) => {
   /**
    * - Download the page content using https.get
    * - If it is a book (ending in .txt), we store the content
@@ -37,6 +37,11 @@ crawl[map] = (url, _) => {
         } else {
           targetDatabase = global.distribution.rawPageContents;
         }
+        
+        // TODO: pageContent might be too large to be sent over HTTP
+        // might need to configure the server to allow a larger size
+        const MAX_PAGE_SIZE = 900;
+        pageContent = pageContent.substring(0, MAX_PAGE_SIZE);
 
         // Store the page content on the appropriate database
         targetDatabase.store.put(pageContent, url, ()=>{
@@ -49,14 +54,14 @@ crawl[map] = (url, _) => {
   });
 };
 
-crawl[reduce] = (url, _count) => {
+crawl['reduce'] = (url, _count) => {
   /**
    * Count the total number of URLs. Totalcount should be 1 given that input URLs are distinct
    * 
    * Output: (url, totalCount)
    */
   let out = {};
-  out[key] = values.reduce((a, b) => a + b, 0);
+  out[url] = _count.reduce((a, b) => a + b, 0);
   return out;
 };
 

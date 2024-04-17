@@ -1,6 +1,21 @@
 # Yellow Poop Stain 💩🚽
 This is Helen, Tiger, JZ, and Mandy's project.
 
+## MapReduce Workflow API docs
+
+### Crawler Workflow
+- Proprocessing: get uncrawled URLs from `distribution.uncrawledURLs`
+- Keys:
+- Existing dataset structure:
+- To-s dataset structure:
+- Mapper:
+- Reducer: 
+
+### Indexing Workflow
+
+
+### Query Workflow
+
 ## TODO's
 1. Extend `distribution.js` to take in a list of IP addresses as an extra argument
     * nodeConfig.start must communicate with all nodes (specified by the input IP addresses), passing its own ip address (TODO: is it possible to get the ip address of the current EC2 instance???) maybe via comm.send

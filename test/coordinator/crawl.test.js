@@ -84,8 +84,7 @@ test('crawl[map]: non-book page', (done) => {
   global.distribution = distribution;
 
   // Input and expected output: {url: 1}
-  // const url = 'https://atlas.cs.brown.edu/data/gutenberg/';
-  const url = 'https://www.york.ac.uk/teaching/cws/wws/webpage1.html';
+  const url = 'https://atlas.cs.brown.edu/data/gutenberg/';
   const expected = {};
   expected[url] = 1;
 
@@ -105,8 +104,7 @@ test('crawl[map]: book page', (done) => {
   global.distribution = distribution;
 
   // Input and expected output: {url: 1}
-  // const url = 'https://atlas.cs.brown.edu/data/gutenberg/donate-howto.txt';
-  const url = 'https://craphound.com/wpspamdump.txt';
+  const url = 'https://atlas.cs.brown.edu/data/gutenberg/donate-howto.txt';
   const expected = {};
   expected[url] = 1;
 

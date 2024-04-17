@@ -81,7 +81,3 @@ const {JSDOM} = require('jsdom');
 global.https = https;
 global.URL = URL;
 global.JSDOM = JSDOM;
-
-// In order to by pass the SSL tests; doesn't work tho
-// https://edstem.org/us/courses/55098/discussion/4761653
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;

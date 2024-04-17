@@ -23,7 +23,7 @@ crawl['map'] = (url, _) => {
    * NOTE: value 1 is a dummy variable
    */
   return new Promise((resolve) => {
-    global.https.get(url, (res) => {
+    global.https.get(url, { rejectUnauthorized: false }, (res) => {
       // Concatenate all data chunk into page content
       let pageContent = '';
       res.on('data', (d) => {

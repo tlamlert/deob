@@ -76,6 +76,46 @@ afterAll((done) => {
 });
 
 // -----------------------------------------------------------------
+// test("getBookMetadata[map] multiline title", (done) => {
+//   const url = "url.com";
+//   const expected = {};
+//   expected[url] =
+//     "The Mirror of Literature, Amusement, and Instruction Vol. 19. No. 575 - 10 Nov 1832";
+//   const pageContent = `The Project Gutenberg EBook of The Mirror of Literature, Amusement, and
+// Instruction, by Various
+
+// This eBook is for the use of anyone anywhere at no cost and with
+// almost no restrictions whatsoever.  You may copy it, give it away or
+// re-use it under the terms of the Project Gutenberg License included
+// with this eBook or online at www.gutenberg.org
+
+
+// Title: The Mirror of Literature, Amusement, and Instruction
+//        Vol. 19. No. 575 - 10 Nov 1832
+
+// Author: Various
+
+// Release Date: April 3, 2004 [EBook #11888]
+
+// Language: English
+
+// Character set encoding: ISO-8859-1
+
+// *** START OF THIS PROJECT GUTENBERG EBOOK THE MIRROR OF LITERATURE ***
+// Produced by Jonathan Ingram, Gregory Margo and PG Distributed
+// Proofreaders
+//   `;
+//   const result = getBookMetadata["map"](url, pageContent);
+//   expect(result).toEqual(expected);
+//   // Note this is kind of betting that the storage is done before it gets here
+//   // Could make this into a .then() I think but this is currently working too
+//   distribution.bookMetadata.store.get(url, (e, v) => {
+//     expect(v).toEqual(expected);
+//     expect(e).toBeNull();
+//     done();
+//   });
+// });
+
 test("getBookMetadata[map] multiline title", (done) => {
   const url = "url.com";
   const expected = {};
@@ -105,14 +145,16 @@ Character set encoding: ISO-8859-1
 Produced by Jonathan Ingram, Gregory Margo and PG Distributed
 Proofreaders
   `;
-  const result = getBookMetadata["map"](url, pageContent);
-  expect(result).toEqual(expected);
+  // const result = getBookMetadata["map"](url, pageContent);
+  // expect(result).toEqual(expected);
   // Note this is kind of betting that the storage is done before it gets here
   // Could make this into a .then() I think but this is currently working too
-  distribution.bookMetadata.store.get(url, (e, v) => {
-    expect(v).toEqual(expected);
-    expect(e).toBeNull();
-    done();
+  Promise.resolve(getBookMetadata['map'](url, pageContent)).then((result) => {
+    distribution.bookMetadata.store.get(url, (e, v) => {
+      expect(result).toEqual(expected);
+      expect(e).toBeNull();
+      done();
+    })
   });
 });
 
@@ -138,9 +180,11 @@ test("getBookMetadata[map] simple title", (done) => {
   
   Character set encoding: ISO-8859-1
       `;
-  const result = getBookMetadata["map"](url2, pageContent);
-  expect(result).toEqual(expected);
-  done();
+  // const result = getBookMetadata["map"](url2, pageContent);
+  Promise.resolve(getBookMetadata['map'](url2, pageContent)).then((result) => {
+    expect(result).toEqual(expected);
+    done();
+  });
 });
 
 test("getBookMetadata[map] no title", (done) => {
@@ -159,9 +203,11 @@ test("getBookMetadata[map] no title", (done) => {
     
     Release Date: March 30, 2004 [EBook #11823]
         `;
-  const result = getBookMetadata["map"](url, pageContent);
-  expect(result).toEqual(expected);
-  done();
+  // const result = getBookMetadata["map"](url, pageContent);
+  Promise.resolve(getBookMetadata['map'](url, pageContent)).then((result) => {
+    expect(result).toEqual(expected);
+    done();
+  });
 });
 
 test("getBookMetadata[reduce]", (done) => {

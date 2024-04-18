@@ -113,15 +113,16 @@ test('getURLs[map]', (done) => {
     // read in the html file
 
     fs.readFile(htmlPath, 'utf8', (err, pageContent) => {
+        console.log("getURLs map pageContent: ", pageContent)
         if (err) {
             expect(err).toBeNull();
             done();
         }
-        getURLs.map(url, pageContent).then((res) => {
-            expect(res).toEqual(expected);
-            expect(res).toEqual(expect.arrayContaining(expected));
-            done();
-        });
+        const res = getURLs['map'](url, pageContent)        
+        console.log("getURLs map url: ", url);
+        expect(res).toEqual(expected);
+        expect(res).toEqual(expect.arrayContaining(expected));
+        done();
     })
 });
 
@@ -129,6 +130,7 @@ test('getURLs[reduce]', (done) => {
     const url = 'https://www.york.ac.uk/teaching/cws/wws/webpage1.html';
     const expected = { 'https://www.york.ac.uk/teaching/cws/wws/webpage1.html': null };
     getURLs.reduce(url, 1).then((res) => {
+        console.log("getURLs reduce url: ", url);
         expect(Object.keys(res)).toEqual(Object.keys(expected));
         done();
     });

@@ -286,7 +286,7 @@ test('url extraction workflow', (done) => {
     let out = [];
     rawLinks.forEach((link) => {
       let o = {};
-      o[new URL(link, base).href] = 1;
+      o[new global.JSON(link, base).href] = 1;
       out.push(o);
     });
     return out;

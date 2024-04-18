@@ -29,6 +29,17 @@ index['map'] = (url, bookMetadata) => {
     out.push(o);
   });
   return out;
+  
+  // return new Promise((resolve) => {
+    // const ngrams = global.utils.preprocess(bookMetadata);
+    // const out = [];
+    // ngrams.forEach((ngram) => {
+    //   const o = {};
+    //   o[ngram] = url;
+    //   out.push(o);
+    // });
+    // resolve(out);
+  // })
 }
 
 /**
@@ -102,14 +113,14 @@ function executeIndexingWorkflow() {
 
     // Workflow configuration
     const workflowConfig = {
-      keys: metadatas.splice(MAX_NUM_METADATAS),
+      keys: metadatas.splice(0, MAX_NUM_METADATAS),
       map: index.map,
       reduce: index.reduce,
       memory: true,
     }
 
     // Perform the mr workflow
-    global.distribution.workers.exec(workflowConfig, (err, metadatas) => {
+    global.distribution.workers.mr.exec(workflowConfig, (err, metadatas) => {
       if (err) {
         console.error("Indexing workflow error: " + err);
         return err;

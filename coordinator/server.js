@@ -28,7 +28,7 @@ const { executeIndexingWorkflow } = require('./index.js');
 const recurringWorkflows = [
     executeCrawlWorkflow,
     // executeGetURLsWorkflow,
-    // executeGetBookMetadataWorkflow,
+    executeGetBookMetadataWorkflow,
     // executeIndexingWorkflow,
 ];
 
@@ -178,7 +178,7 @@ const startServer = function (serverConfig, cb = () => { }) {
                 for (const [_, jobID] of Object.entries(jobIDs)) {
                     clearInterval(jobID);
                 }
-                jobIDs = new Map();
+                jobIDs.clear();
             }
         } else if (req.method === 'GET') {
             if (path === "/search") { // e.g. /search?q=hello
@@ -213,6 +213,7 @@ const startServer = function (serverConfig, cb = () => { }) {
         console.log('all groups are created');
         // init uncrawled database
         const url = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
+        // const url = 'https://atlas.cs.brown.edu/data/gutenberg/';
         global.distribution.uncrawledURLs.store.put(url, url, () => {
             server.listen(serverConfig.port, serverConfig.ip, () => {
                 console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);

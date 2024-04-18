@@ -17,6 +17,7 @@ getBookMetadata["map"] = (url, pageContent) => {
    *  Store metadata in `bookMetadata`
    *  output: (url, metadata)
    * */
+  console.log("Here")
   const regex = /Title:(.*?)(?=Author:)/s;
   const match = regex.exec(pageContent);
   let out = {};
@@ -26,13 +27,18 @@ getBookMetadata["map"] = (url, pageContent) => {
     titleText = titleText.replace(/[\n\t]/g, " ");
     titleText = titleText.replace(/\s+/g, " ");
     out[url] = titleText;
+    console.log("titleText: ", titleText)
     // Only store if regex match can be found
-    global.distribution.bookMetadata.store.put(out, url, (e, v) => {
-      console.log("getBookMetadata Map Error:", e);
-      console.log("getBookMetadata Map Value:", v);
-    });
+    return new Promise((resolve) => {
+      global.distribution.bookMetadata.store.put(out, url, (e, v) => {
+        console.log("getBookMetadata Map Error:", e);
+        console.log("getBookMetadata Map Value:", v);
+        resolve(out);
+      });
+    })
   } else {
     // If we can't find the regex, ignore this file
+    console.log("titleText GOT NOTHING")
     out[url] = "N/A";
   }
   return out;
@@ -67,9 +73,9 @@ function executeGetBookMetadataWorkflow() {
 
     // Define the workflow configuration
     const workflowConfig = {
-      keys: rawBookContents.splice(MAX_NUM_URLS),
-      map: getBookMetadata.map,
-      reduce: getBookMetadata.reduce,
+      keys: rawBookContents.splice(0, MAX_NUM_URLS),
+      map: getBookMetadata['map'],
+      reduce: getBookMetadata['reduce'],
       memory: true,
     };
 
@@ -79,6 +85,10 @@ function executeGetBookMetadataWorkflow() {
         console.error("executeGetBookMetadataWorkflow", err);
         return err;
       }
+      // Remove parsed URLs from rawBookContents
+      bookMetadata.forEach((url) => {
+        global.distribution.rawBookContents.store.del(url, () => {});
+      })
     });
   });
 }

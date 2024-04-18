@@ -129,20 +129,25 @@ crawlAndMap['reduce'] = (url, value) => {
       // filter out duplicate links
       const out = {}
       global.distribution.crawledURLs.store.get(url, (err, value) => {
+        console.log('err: ', err, value);
         if (err) { // the url has not been crawled
+          console.log("The url has not been crawled")
           // the url has not been crawled, crawl  
           global.distribution.uncrawledURLs.store.put(url, url, (err, value) => {
             // store in distribution.uncrawledURLs
-            if (err) {
+            if (err && Object.keys(err).length > 0) {
+              console.log("uncrawledURLs put error")
               global.utils.errorLog(err)
               reject(err);
             } else {
+              console.log("uncrawledURLs put success", value)
               out[url] = null;
               resolve(out);
             }
           })
         } else {
           // the url has been crawled, do nothing
+          console.log("the url has been crawled, do nothing");
           out[url] = null;
           resolve(out);
         }

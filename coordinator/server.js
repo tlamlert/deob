@@ -3,10 +3,12 @@
 // =======================================
 
 const http = require('http');
+const url = require('url');
 const distribution = require('../distribution.js');
 const utils = require("./utils.js");
 const URL = require('url');
 const { JSDOM } = require('jsdom');
+id = distribution.util.id;
 global.distribution = distribution;
 global.URL = URL;
 global.JSDOM = JSDOM;
@@ -65,33 +67,31 @@ function readServerConfiguration() {
     if (args.workers) {
         serverConfig.workers = args.workers.split(',');
     }
+
+    if (args.workerPort) {
+        serverConfig.workerPort = args.workerPort;
+    }
 }
 
 // =======================================
 //          Initialize groups
 // =======================================
 
-const createWorkerAndStorageGroups = function (workers, ports) {
+const createWorkerAndStorageGroups = function (workers, workerPort) {
 
     const createGenericGroup = function (gidString) {
         const genericGroup = {}
-        // TODO: handles when `ports` is a number
-        for (let i = 0; i < workers.length; i++) {
-            const neighbor = { ip: workers[i], port: ports[i] }; // port is not defined
+        for (const ipAddr of workers) {
+            const neighbor = { ip: ipAddr, port: workerPort }; // port is not defined
             genericGroup[id.getSID(neighbor)] = neighbor;
         }
-
-        // for (const ipAddr of workers) {
-        //     const neighbor = { ip: ipAddr, port: ports }; // port is not defined
-        //     genericGroup[id.getSID(neighbor)] = neighbor;
-        // }
         const config = { gid: gidString };
 
         return new Promise((resolve) => {
             console.log("Creating group: ", gidString);
             groupsTemplate(config).put(config, genericGroup, (err, value) => {
-                if (err) {
-                    console.error(err);
+                if (Object.keys(err).length > 0) {
+                    console.error('err: ', err);
                 } else {
                     console.log("Group deployed! ", gidString);
                 }
@@ -141,32 +141,49 @@ const createWorkerAndStorageGroups = function (workers, ports) {
 //          Start HTTP Server
 // =======================================
 
-const startServer = function (serverConfig, cb=()=>{}) {
+const startServer = function (serverConfig, cb = () => { }) {
     const server = http.createServer((req, res) => {
-        const path = parsedUrl.pathname;
+        const path = url.parse(req.url).pathname;
+        console.log('request received for path: ', path);
+        console.log('method: ', req.method);
         if (req.method === 'PUT') {
             if (path === '/start') {
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
-    
-                // Set interval for each workflow in the list to manage access control to distributed stores
-                global.jobIDs = new Map();
-                recurringWorkflows.forEach((wf) => {
-                    let locked = false;
-                    global.jobID[wf] = setInterval(() => {
-                        if (!locked) {
-                            locked = true;
-                            workflow();
-                            locked = false;
-                        }
+                res.end('Starting workflows');
+                
+                req.on('end', () => {
+                    console.log('Setting interval for each workflow');
+                    // Set interval for each workflow in the list to manage access control to distributed stores
+
+                    global.ehorsh = setInterval(() => {
+                        console.log('workflow triggered!');
                     }, 1000);
+
+                    // global.jobIDs = new Map();
+                    // recurringWorkflows.forEach((wf) => {
+                    //     let locked = false;
+                    //     global.jobID[wf] = setInterval(() => {
+                    //         console.log('workflow triggered!');
+                    //         if (!locked) {
+                    //             locked = true;
+                    //             workflow();
+                    //             locked = false;
+                    //         }
+                    //     }, 1000);
+                    // })
                 })
+
             } else if (path === '/stop') {
                 /**
                  * Stop the recurring job initialized in startCrawl
                  */
-                global.jobIDs.forEach((id) => {
-                    clearInterval(jobId);
-                })
+                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                res.end('Stopping workflows');
+                clearInterval(global.ehorsh);
+                
+                // global.jobIDs.forEach((id) => {
+                //     clearInterval(jobId);
+                // })
             }
         } else if (req.method === 'GET') {
             if (path === "/search") { // e.g. /search?q=hello
@@ -180,7 +197,7 @@ const startServer = function (serverConfig, cb=()=>{}) {
                         res.end(distribution.util.serialize(err));
                         return;
                     }
-    
+
                     // res: [(url, count), ...]
                     // Sort by count
                     val.sort((a, b) => b[1] - a[1]);
@@ -197,7 +214,7 @@ const startServer = function (serverConfig, cb=()=>{}) {
     });
 
     // create worker and storage groups
-    createWorkerAndStorageGroups(serverConfig.workers, serverConfig.ports).then(() => {
+    createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPort).then(() => {
         console.log('all groups are created');
         server.listen(serverConfig.port, serverConfig.ip, () => {
             console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);

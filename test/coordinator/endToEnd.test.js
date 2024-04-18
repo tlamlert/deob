@@ -54,7 +54,7 @@ beforeAll((done) => {
     port: 8080,
     workers: [n1.ip, n2.ip, n3.ip],
     ports: [n1.port, n2.port, n3.port],
-  }
+  };
 
   // Spawn 3 nodes as the distributed system
   // This is equivalent to running `node distribution.js` in all EC2 instances

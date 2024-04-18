@@ -124,56 +124,30 @@ crawlAndMap['reduce'] = (url, value) => {
   };
 
   const getURLsReduce = (url, _count) => {
-    let out = {};
-    out[key] = values;
-    return out;
-
-      // // filter out duplicate links
-      // const out = {}
-      // global.distribution.crawledURLs.store.get(url, (err, value) => {
-      //   if (err) { // the url has not been crawled
-      //     // the url has not been crawled, crawl  
-      //     global.distribution.uncrawledURLs.store.put(url, url, (err, value) => {
-      //       // store in distribution.uncrawledURLs
-      //       if (err) {
-      //         global.utils.errorLog(err)
-      //         reject(err);
-      //       } else {
-      //         out[url] = null;
-      //         resolve(out);
-      //       }
-      //     })
-      //   } else {
-      //     // the url has been crawled, do nothing
-      //     out[url] = null;
-      //     resolve(out);
-      //   }
+    return new Promise((resolve, reject) => {
+      console.log("getURLs reduce url: ", url);
+      // filter out duplicate links
+      const out = {}
+      global.distribution.crawledURLs.store.get(url, (err, value) => {
+        if (err) { // the url has not been crawled
+          // the url has not been crawled, crawl  
+          global.distribution.uncrawledURLs.store.put(url, url, (err, value) => {
+            // store in distribution.uncrawledURLs
+            if (err) {
+              global.utils.errorLog(err)
+              reject(err);
+            } else {
+              out[url] = null;
+              resolve(out);
+            }
+          })
+        } else {
+          // the url has been crawled, do nothing
+          out[url] = null;
+          resolve(out);
+        }
+      })
     });
-
-    // return new Promise((resolve, reject) => {
-    //   console.log("getURLs reduce url: ", url);
-    //   // filter out duplicate links
-    //   const out = {}
-    //   global.distribution.crawledURLs.store.get(url, (err, value) => {
-    //     if (err) { // the url has not been crawled
-    //       // the url has not been crawled, crawl  
-    //       global.distribution.uncrawledURLs.store.put(url, url, (err, value) => {
-    //         // store in distribution.uncrawledURLs
-    //         if (err) {
-    //           global.utils.errorLog(err)
-    //           reject(err);
-    //         } else {
-    //           out[url] = null;
-    //           resolve(out);
-    //         }
-    //       })
-    //     } else {
-    //       // the url has been crawled, do nothing
-    //       out[url] = null;
-    //       resolve(out);
-    //     }
-    //   })
-    // });
   };
   
   if (url.endsWith('.txt')) {

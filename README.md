@@ -37,6 +37,11 @@ git clone https://github.com/tlamlert/m6.git
 sudo apt install npm
 ```
 
+### Testing locally
+shell1 (worker): `node distribution.js --port 8081`
+shell2 (coordinator): `node ./coordinator/server.js --workers 127.0.0.1 --workerPort 8081`
+shell3 (client): `curl -X PUT -d "" 127.0.0.1:8080/start`
+
 ### Manually Sending a Request to a Node (manual `comm.send`)
 1. Start the node server and expose it to the public internet by running `node distribution.js --ip "0.0.0.0"`
 2. Send a request to the node server (from a remote machine in the same network) by running the following command:

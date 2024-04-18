@@ -67,7 +67,7 @@ const preprocess = function(text, maxN=3) {
   let ngrams = [];
   for (let i = 1; i <= maxN; i++) {
     const igram = generateNgrams(filteredBagOfWords, i);
-    ngrams = [...ngrams, ...igram];
+    ngrams = ngrams.concat(igram);
   }
   
   return ngrams;

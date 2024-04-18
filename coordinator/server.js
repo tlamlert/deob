@@ -28,12 +28,12 @@ const { executeIndexingWorkflow } = require('./index.js');
 
 // Workflows are in their corresponding files
 const recurringWorkflows = [
-    // executeCrawlGetBookMetadataWorkflow,
-    executeCrawlGetURLsWorkflow,
+    executeCrawlGetBookMetadataWorkflow,
+    // executeCrawlGetURLsWorkflow,
     // executeCrawlWorkflow,
     // executeGetURLsWorkflow,
     // executeGetBookMetadataWorkflow,
-    // executeIndexingWorkflow,
+    executeIndexingWorkflow,
 ];
 
 // // TODO: This is not even a mr workflow
@@ -168,11 +168,11 @@ const startServer = function (serverConfig, cb = () => { }) {
 
                 // Set interval for each workflow in the list to manage access control to distributed stores
                 const TIME_BETWEEN_JOBS = 1000;
-                let locked = false;
                 recurringWorkflows.forEach((wf, i) => {
                     const jobID = setInterval(() => {
-                        console.log(`workflow ${i} triggered!`);
+                        let locked = false;
                         if (!locked) {
+                            console.log(`workflow ${i} triggered!`);
                             locked = true;
                             wf(() => {
                                 locked = false;
@@ -189,7 +189,7 @@ const startServer = function (serverConfig, cb = () => { }) {
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
                 res.end('Stopping workflows');
 
-                for (const [_, jobID] of Object.entries(jobIDs)) {
+                for (const [_, jobID] of jobIDs) {
                     clearInterval(jobID);
                 }
                 jobIDs.clear();
@@ -199,9 +199,16 @@ const startServer = function (serverConfig, cb = () => { }) {
                 // Get the query from the URL
                 const query = url.parse(req.url, true).query;
                 const q = query.q;
-                // 
-                const ngram = utils.generateNgrams(q);
-                global.distribution.invertedMetadata.get(ngram, (err, val) => {
+
+                // TODO: RETURNS LIST OF NGRAMS, NEED TO UPDATE QUERY TO HANDLE ALL OF THEM??
+                // CURRENT FIX: JUST TAKE FIRST NGRAM
+
+                // EXAMPLE QUERY : curl -X GET -d "" 127.0.0.1:8080/search?q=june
+                const ngrams = utils.preprocess(q);
+                const test_ngram = ngrams[0];
+                console.log('test_ngram : ', test_ngram);
+
+                global.distribution.invertedMetadata.store.get(test_ngram, (err, val) => {
                     if (err) {
                         res.end(distribution.util.serialize(err));
                         return;

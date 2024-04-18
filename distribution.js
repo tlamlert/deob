@@ -81,3 +81,11 @@ const {JSDOM} = require('jsdom');
 global.https = https;
 global.URL = URL;
 global.JSDOM = JSDOM;
+global.utils = require('./coordinator/utils.js');
+global.natural = require('natural');
+
+// Stop words from file
+const fs = require('fs');
+const stopwordsData = fs.readFileSync('./coordinator/data/stopwords.txt', 'utf8');
+const bagOfStopwords = stopwordsData.split('\n').filter(Boolean);
+global.bagOfStopwords = bagOfStopwords;

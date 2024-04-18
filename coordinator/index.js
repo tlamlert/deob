@@ -5,7 +5,6 @@
  * https://hackmd.io/I9s_IMAfT4ub5kIkjAwD0w?view#N-Gram-Workflow--Indexing-Workflow-Helen
  */
 
-
 // =======================================
 //        Map / Reduce Functions
 // =======================================
@@ -54,11 +53,11 @@ index['map'] = (url, bookMetadata) => {
 index['reduce'] = (ngram, urls) => {
   return new Promise((resolve) => {
     // Get existing [(url,count), ...] object if it exists
-    global.distribution.invertedIndex.store.get(ngram, (e, oldURLs) => {
+    global.distribution.invertedMetadata.store.get(ngram, (e, oldURLs) => {
       const urlToCount = {} ;
 
       // Received oldURLS. Populate urlToCount with existing urls/counts
-      if (e && Object.keys(e).length > 0) {
+      if (oldURLs && Object.keys(oldURLs).length > 0) {
         for (const urlCount of oldURLs) {
           urlToCount[urlCount[0]] = urlCount[1];
         }
@@ -83,9 +82,9 @@ index['reduce'] = (ngram, urls) => {
       // res.sort((a, b) => b[1] - a[1]);
       
       // Store results as [[url, count], ... ]
-      global.distribution.invertedIndex.store.put(res, ngram, (e, v) => {
+      global.distribution.invertedMetadata.store.put(res, ngram, (e, v) => {
         if (e && Object.keys(e).length > 0) {
-          global.utils.errorLog(e);
+          console.error(e);
         }
 
         // Return as { ngram : [ [url, count], ... ] } (needed to conform to existing API)
@@ -102,12 +101,13 @@ index['reduce'] = (ngram, urls) => {
 // =======================================
 
 function executeIndexingWorkflow() {
+  console.log("\x1b[31m executeIndexingWorkflow \x1b[0m");
   const MAX_NUM_METADATAS = 100;
 
   // Get all book metadata from `bookMetadata`
   global.distribution.bookMetadata.store.get(null, (err, metadatas) => {
     if (err && Object.keys(err).length > 0) {
-      global.utils.errorLog(err);
+      console.error(err);
       return err;
     }
 
@@ -120,7 +120,7 @@ function executeIndexingWorkflow() {
     }
 
     // Perform the mr workflow
-    global.distribution.workers.mr.exec(workflowConfig, (err, metadatas) => {
+    global.distribution.bookMetadata.mr.exec(workflowConfig, (err, metadatas) => {
       if (err) {
         console.error("Indexing workflow error: " + err);
         return err;

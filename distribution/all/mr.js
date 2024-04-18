@@ -164,11 +164,14 @@ const mr = function(config) {
                 groupService.comm.send([], reduceNotify, (e, v) => {
                   const result = Object.values(v).flat();
                   // deregister using routes.del
-                  groupService.routes.del(mrName, (e, v) => {
-                    // // TODO: need to make this work baby
-                    // callback(null, result);
-                    nextExecution(null, result);
-                  });
+
+                  // TODO: DELETING SERVICE CAUSES ERRORS IN FUTURE WORKFLOWS
+                  // groupService.routes.del(mrName, (e, v) => {
+                  //   // // TODO: need to make this work baby
+                  //   // callback(null, result);
+                  //   nextExecution(null, result);
+                  // });
+                  nextExecution(null, result);
                 });
               });
             });

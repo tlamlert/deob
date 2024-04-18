@@ -8,7 +8,7 @@ const { index } = require('../../coordinator/index.js');
 const utils = require('../../coordinator/utils.js');
 
 const metadataGroup = {};
-const invertedIndexGroup = {};
+const invertedMetadataGroup = {};
 
 /*
   This hack is necessary since we can not
@@ -46,9 +46,9 @@ beforeAll((done) => {
   metadataGroup[id.getSID(n2)] = n2;
   metadataGroup[id.getSID(n3)] = n3;
 
-  invertedIndexGroup[id.getSID(n1)] = n1;
-  invertedIndexGroup[id.getSID(n2)] = n2;
-  invertedIndexGroup[id.getSID(n3)] = n3;
+  invertedMetadataGroup[id.getSID(n1)] = n1;
+  invertedMetadataGroup[id.getSID(n2)] = n2;
+  invertedMetadataGroup[id.getSID(n3)] = n3;
 
   // Spawn 3 nodes as the distributed system
   const startNodes = (cb) => {
@@ -67,8 +67,8 @@ beforeAll((done) => {
     startNodes(() => {
       const metadataConfig = {gid: 'bookMetadata'};
       groupsTemplate(metadataConfig).put(metadataConfig, metadataGroup, (e, v) => {
-        const invertedIndexConfig = {gid: 'invertedIndex'};
-        groupsTemplate(invertedIndexConfig).put(invertedIndexConfig, invertedIndexGroup, (e, v) => {
+        const invertedMetadataConfig = {gid: 'invertedMetadata'};
+        groupsTemplate(invertedMetadataConfig).put(invertedMetadataConfig, invertedMetadataGroup, (e, v) => {
           done();
         });
       });
@@ -125,7 +125,7 @@ test('index[reduce]', (done) => {
         expect(result[ngram]).toEqual(expect.arrayContaining(expected[ngram]));
 
         // Test distributed store.get()
-        distribution.invertedIndex.store.get('sheep shoop', (e, v) => {
+        distribution.invertedMetadata.store.get('sheep shoop', (e, v) => {
             expect(e).toBeNull();
             expect(v).toEqual(expect.arrayContaining(expected[ngram]));
             done();
@@ -141,9 +141,8 @@ test('index[reduce] w/ existing ngram object', (done) => {
     // Put ngram object
     const ngram = 'beep boop';
     const oldURLs = [['www.bacon.edu', 3], ['www.test.com', 2], ['www.apple.org', 1]];
-    distribution.invertedIndex.store.put(oldURLs, ngram, (e,v) => {
+    distribution.invertedMetadata.store.put(oldURLs, ngram, (e,v) => {
         expect(e).toBeNull();
-
         // Add new urls
         const newURLs = ["www.chicken.com", "www.test.com"];
         const expected = {'beep boop' : [['www.bacon.edu', 3], ['www.test.com', 3], ['www.apple.org', 1], ["www.chicken.com", 1]]};
@@ -153,7 +152,7 @@ test('index[reduce] w/ existing ngram object', (done) => {
             expect(result[ngram]).toEqual(expect.arrayContaining(expected[ngram]));
 
             // Test distributed store.get()
-            distribution.invertedIndex.store.get('beep boop', (e, v) => {
+            distribution.invertedMetadata.store.get('beep boop', (e, v) => {
                 expect(e).toBeNull();
                 expect(v).toEqual(expect.arrayContaining(expected[ngram]));
                 done();

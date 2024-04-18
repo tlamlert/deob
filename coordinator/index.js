@@ -5,7 +5,6 @@
  * https://hackmd.io/I9s_IMAfT4ub5kIkjAwD0w?view#N-Gram-Workflow--Indexing-Workflow-Helen
  */
 
-const utils = require('./utils')
 
 // =======================================
 //        Map / Reduce Functions
@@ -22,7 +21,7 @@ const index = {};
  * @returns List of ngram-url pairs (i.e. [[ngram, url], ...] )
  */
 index['map'] = (url, bookMetadata) => {
-  const ngrams = utils.preprocess(bookMetadata);
+  const ngrams = global.utils.preprocess(bookMetadata);
   const out = [];
   ngrams.forEach((ngram) => {
     const o = {};
@@ -75,7 +74,7 @@ index['reduce'] = (ngram, urls) => {
       // Store results as [[url, count], ... ]
       global.distribution.invertedIndex.store.put(res, ngram, (e, v) => {
         if (e) {
-          utils.errorLog(e);
+          global.utils.errorLog(e);
         }
 
         // Return as { ngram : [ [url, count], ... ] } (needed to conform to existing API)
@@ -92,10 +91,31 @@ index['reduce'] = (ngram, urls) => {
 // =======================================
 
 function executeIndexingWorkflow() {
-  // TODO: Get all book metadata from `bookMetadata`
-  // global.distribution.bookMetadata.
+  const MAX_NUM_METADATAS = 100;
 
+  // Get all book metadata from `bookMetadata`
+  global.distribution.bookMetadata.store.get(null, (err, metadatas) => {
+    if (err) {
+      global.utils.errorLog(err);
+      return err;
+    }
 
+    // Workflow configuration
+    const workflowConfig = {
+      keys: metadatas.splice(MAX_NUM_METADATAS),
+      map: index.map,
+      reduce: index.reduce,
+      memory: true,
+    }
+
+    // Perform the mr workflow
+    global.distribution.workers.exec(workflowConfig, (err, metadatas) => {
+      if (err) {
+        console.error(err);
+        return err;
+      }
+    })
+  })
 }
 
 module.exports = {

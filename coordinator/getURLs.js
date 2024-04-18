@@ -11,39 +11,53 @@
 
 const getURLs = {};
 
-getURLs[map] = (url, pageContent) => {
-  // convert the given url to a directory
-  const base = new global.URL(url);
+getURLs['map'] = (url, pageContent) => {
+  return new Promise((resolve) => {
+    // convert the given url to a directory
+    const base = new global.URL(url);
 
-  // init dom object
-  const dom = new global.JSDOM(pageContent);
-  const rawLinks = [...dom.window.document.querySelectorAll('a')];
+    // init dom object
+    const dom = new global.JSDOM(pageContent);
+    const rawLinks = [...dom.window.document.querySelectorAll('a')];
 
-  // construct output
-  let out = [];
-  rawLinks.forEach((link) => {
-    let o = {};
-    let newUrl = new URL(link, base).href;
-    o[newUrl] = 1;
-    out.push(o);
+    // construct output
+    let out = [];
+    rawLinks.forEach((link) => {
+      let o = {};
+      let newUrl = new URL(link, base).href;
+      o[newUrl] = 1;
+      out.push(o);
+      if (out.length === rawLinks.length) {
+        resolve(out);
+      }
+    });
   });
-  return out;
 };
 
-getURLs[reduce] = (url, _count) => {
-  // filter out duplicate links
-  out = {}
-  distribution.crawledURLs.store.get(url, (err, value) => {
-    if (err) {
-      // the url has not been crawled, crawl  
-      distribution.uncrawledURLs.store.put(url, url, (err, value) => {
-        // store in distribution.uncrawledURLs
-        global.distribution.util.errorLog(err)
+getURLs['reduce'] = (url, _count) => {
+  return new Promise((resolve, reject) => {
+    // filter out duplicate links
+    out = {}
+    distribution.crawledURLs.store.get(url, (err, value) => {
+      if (err) { // the url has not been crawled
+        // the url has not been crawled, crawl  
+        distribution.uncrawledURLs.store.put(url, url, (err, value) => {
+          // store in distribution.uncrawledURLs
+          if (err) {
+            global.utils.errorLog(err)
+            reject(err);
+          } else {
+            out[url] = null;
+            resolve(out);
+          }
+        })
+      } else {
+        // the url has been crawled, do nothing
         out[url] = null;
-      })
-    }
-  })
-  return out;
+        resolve(out);
+      }
+    })
+  });
 };
 
 // =======================================
@@ -55,7 +69,7 @@ const MAX_NUM_PAGES = 100;
 function executeGetURLsWorkflow() {
   global.distribution.rawPageContents.store.get(null, (err, pages) => {
     if (err) {
-      global.distribution.util.errorLog(err);
+      global.utils.errorLog(err);
       return err;
     }
 
@@ -70,7 +84,7 @@ function executeGetURLsWorkflow() {
     // Perform the crawl map reduce workflow
     global.distribution.workers.exec(workflowConfig, (err, urls) => {
       if (err) {
-        global.distribution.util.errorLog(err);
+        global.utils.errorLog(err);
         return err;
       }
 

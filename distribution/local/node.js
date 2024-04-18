@@ -50,8 +50,8 @@ const start = function(onStart) {
     const pathname = url.parse(req.url).pathname;
     const [, service, method] = pathname.split('/');
 
-    console.log(`[SERVER] (${global.nodeConfig.ip}:${global.nodeConfig.port})
-        Request: ${service}:${method}`);
+    // console.log(`[SERVER] (${global.nodeConfig.ip}:${global.nodeConfig.port})
+    //     Request: ${service}:${method}`);
 
 
     /*
@@ -116,8 +116,8 @@ const start = function(onStart) {
         // Write some code...
 
 
-        console.log(`[SERVER] Args: ${JSON.stringify(args)}
-            ServiceCallback: ${serviceCallback}`);
+        // console.log(`[SERVER] Args: ${JSON.stringify(args)}
+        //     ServiceCallback: ${serviceCallback}`);
 
         service[method](...args, serviceCallback);
       });

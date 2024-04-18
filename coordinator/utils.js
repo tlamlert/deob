@@ -5,7 +5,16 @@
  */
 const fs = require('fs');
 const path = require('path');
+global.fs = fs;
+global.path = path;
+
+// Read stop words from file
+const STOP_WORD_FILE = path.join(__dirname, '/data/stopwords.txt');
+const stopwordsData = fs.readFileSync(STOP_WORD_FILE, 'utf8');
+const bagOfStopwords = stopwordsData.split('\n').filter(Boolean);
 const natural = require('natural');
+global.natural = natural;
+global.bagOfStopwords = bagOfStopwords;
 
 global.newDebugSesh = true;
 const errorLog = function(msg, filename='debug.txt') {
@@ -18,12 +27,12 @@ const errorLog = function(msg, filename='debug.txt') {
 
   // If running for the first time, clear the file with new write
   if (global.newDebugSesh) {
-    fs.writeFileSync(path.join(__dirname, filename), msg + '\n');  
+    global.fs.writeFileSync(global.path.join(__dirname, filename), msg + '\n');  
     global.newDebugSesh = false;
   } 
   // Else append contents
   else  {
-    fs.appendFileSync(path.join(__dirname, filename), msg + '\n');
+    global.fs.appendFileSync(global.path.join(__dirname, filename), msg + '\n');
   }
   
   // Also write contents to stdout
@@ -32,11 +41,6 @@ const errorLog = function(msg, filename='debug.txt') {
 };
 
 // =====================================================================
-
-// Read stop words from file
-const STOP_WORD_FILE = path.join(__dirname, '/data/stopwords.txt');
-const stopwordsData = fs.readFileSync(STOP_WORD_FILE, 'utf8');
-const bagOfStopwords = stopwordsData.split('\n').filter(Boolean);
 
 /**
  * Generate n-grams (including sub-grams) from a given text
@@ -54,10 +58,10 @@ const preprocess = function(text, maxN=3) {
   const lowercaseBagOfWords = bagOfWords.toLowerCase();
 
   // Stem each word
-  const stemmedBagOfWords = lowercaseBagOfWords.split('\n').map(word => natural.PorterStemmer.stem(word)).join('\n');
+  const stemmedBagOfWords = lowercaseBagOfWords.split('\n').map(word => global.natural.PorterStemmer.stem(word)).join('\n');
 
   // Filter out the stopwords and get rid of leading and trailing spaces
-  const filteredBagOfWords = stemmedBagOfWords.split('\n').filter(word => !bagOfStopwords.includes(word)).join(" ").trim();
+  const filteredBagOfWords = stemmedBagOfWords.split('\n').filter(word => !global.bagOfStopwords.includes(word)).join(" ").trim();
 
   // Generate N-grams
   let ngrams = [];

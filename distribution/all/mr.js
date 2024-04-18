@@ -7,6 +7,7 @@ const mr = function(config) {
   return {
     exec: (configuration, callback) => {
       /* Change this with your own exciting Map Reduce code! */
+      console.log('keys; ', configuration.keys);
 
       // define the map-reduce service
       const mrName = 'mr-' + util.id.getSID(configuration);
@@ -60,6 +61,7 @@ const mr = function(config) {
                 // store in memory or write to local storage
                 if (this.memory) {
                   this.mapOutput = mapOutput;
+                  console.log('finished map phase');
                   callback(null, mapOutput);
                 } else {
                   localService.store.put(mapOutput,
@@ -136,6 +138,7 @@ const mr = function(config) {
       mrService.reduceNotify = function(callback=()=>{}) {
         const result = [...this.reduceInput.entries()].map(
             (args) => this.reducer(...args));
+          console.log('finished reduce phase');
         callback(null, result);
       };
 
@@ -153,10 +156,11 @@ const mr = function(config) {
                 groupService.comm.send([], reduceNotify, (e, v) => {
                   console.log('reduce output: ', v);
                   const result = Object.values(v).flat();
-                  // deregister using routes.del
-                  groupService.routes.del(mrName, (e, v) => {
-                    callback(null, result);
-                  });
+                  // TODO: need to make this work baby
+                  // // deregister using routes.del
+                  // groupService.routes.del(mrName, (e, v) => {
+                  //   callback(null, result);
+                  // });
                 });
               });
             });

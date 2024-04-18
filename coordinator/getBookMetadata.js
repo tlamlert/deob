@@ -59,7 +59,7 @@ function executeGetBookMetadataWorkflow() {
   // Get all crawled URLs from `crawledURLs`
   // Note: This assumes that Crawl was run before such that there exists
   // relevant data on the worker nodes
-  global.distribution.crawledURLs.store.get(null, (err, crawledURLs) => {
+  global.distribution.rawBookContents.store.get(null, (err, rawBookContents) => {
     if (err) {
       console.error(err);
       return err;
@@ -67,16 +67,16 @@ function executeGetBookMetadataWorkflow() {
 
     // Define the workflow configuration
     const workflowConfig = {
-      keys: crawledURLs.splice(MAX_NUM_URLS),
+      keys: rawBookContents.splice(MAX_NUM_URLS),
       map: getBookMetadata.map,
       reduce: getBookMetadata.reduce,
       memory: true,
     };
 
     // Perform the getBookMetadata map reduce workflow
-    global.distribution.workers.exec(workflowConfig, (err, bookMetadata) => {
+    global.distribution.workers.mr.exec(workflowConfig, (err, bookMetadata) => {
       if (err) {
-        console.error(err);
+        console.error("executeGetBookMetadataWorkflow", err);
         return err;
       }
     });

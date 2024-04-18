@@ -47,7 +47,7 @@ index['reduce'] = (ngram, urls) => {
       const urlToCount = {} ;
 
       // Received oldURLS. Populate urlToCount with existing urls/counts
-      if (!e) {
+      if (e && Object.keys(e).length > 0) {
         for (const urlCount of oldURLs) {
           urlToCount[urlCount[0]] = urlCount[1];
         }
@@ -73,7 +73,7 @@ index['reduce'] = (ngram, urls) => {
       
       // Store results as [[url, count], ... ]
       global.distribution.invertedIndex.store.put(res, ngram, (e, v) => {
-        if (e) {
+        if (e && Object.keys(e).length > 0) {
           global.utils.errorLog(e);
         }
 
@@ -95,7 +95,7 @@ function executeIndexingWorkflow() {
 
   // Get all book metadata from `bookMetadata`
   global.distribution.bookMetadata.store.get(null, (err, metadatas) => {
-    if (err) {
+    if (err && Object.keys(err).length > 0) {
       global.utils.errorLog(err);
       return err;
     }
@@ -111,7 +111,7 @@ function executeIndexingWorkflow() {
     // Perform the mr workflow
     global.distribution.workers.exec(workflowConfig, (err, metadatas) => {
       if (err) {
-        console.error(err);
+        console.error("Indexing workflow error: " + err);
         return err;
       }
     })

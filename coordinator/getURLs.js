@@ -68,7 +68,7 @@ const MAX_NUM_PAGES = 100;
 
 function executeGetURLsWorkflow() {
   global.distribution.rawPageContents.store.get(null, (err, pages) => {
-    if (err) {
+    if (Object.keys(err).length > 0) {
       global.utils.errorLog(err);
       return err;
     }

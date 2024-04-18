@@ -27,9 +27,9 @@ const { executeIndexingWorkflow } = require('./index.js');
 // Workflows are in their corresponding files
 const recurringWorkflows = [
     executeCrawlWorkflow,
-    executeGetURLsWorkflow,
-    executeGetBookMetadataWorkflow,
-    executeIndexingWorkflow,
+    // executeGetURLsWorkflow,
+    // executeGetBookMetadataWorkflow,
+    // executeIndexingWorkflow,
 ];
 
 // // TODO: This is not even a mr workflow
@@ -99,6 +99,7 @@ const createWorkerAndStorageGroups = function (workers, workerPort) {
             });
         })
     }
+    return Promise.all([
 
     // =======================================
     //          Worker Groups
@@ -106,7 +107,7 @@ const createWorkerAndStorageGroups = function (workers, workerPort) {
 
     // Worker : The group the connects all the EC2 instances (the workers)
     // NOTE: DO NOT INCLUDE THE SERVER/COORDINATOR IN THE GROUP
-    return Promise.all([createGenericGroup("workers"),
+    createGenericGroup("workers"),
 
     // =======================================
     //          Storage Groups
@@ -142,6 +143,8 @@ const createWorkerAndStorageGroups = function (workers, workerPort) {
 // =======================================
 
 const startServer = function (serverConfig, cb = () => { }) {
+    const jobIDs = new Map();
+
     const server = http.createServer((req, res) => {
         const path = url.parse(req.url).pathname;
         console.log('request received for path: ', path);
@@ -150,27 +153,19 @@ const startServer = function (serverConfig, cb = () => { }) {
             if (path === '/start') {
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
                 res.end('Starting workflows');
-                
-                req.on('end', () => {
-                    console.log('Setting interval for each workflow');
-                    // Set interval for each workflow in the list to manage access control to distributed stores
 
-                    global.ehorsh = setInterval(() => {
-                        console.log('workflow triggered!');
-                    }, 1000);
-
-                    // global.jobIDs = new Map();
-                    // recurringWorkflows.forEach((wf) => {
-                    //     let locked = false;
-                    //     global.jobID[wf] = setInterval(() => {
-                    //         console.log('workflow triggered!');
-                    //         if (!locked) {
-                    //             locked = true;
-                    //             workflow();
-                    //             locked = false;
-                    //         }
-                    //     }, 1000);
-                    // })
+                // Set interval for each workflow in the list to manage access control to distributed stores
+                const TIME_BETWEEN_JOBS = 1000;
+                recurringWorkflows.forEach((wf, i) => {
+                    let locked = false;
+                    jobIDs[wf] = setInterval(() => {
+                        console.log(`workflow ${i} triggered!`);
+                        if (!locked) {
+                            locked = true;
+                            wf();
+                            locked = false;
+                        }
+                    }, TIME_BETWEEN_JOBS);
                 })
 
             } else if (path === '/stop') {
@@ -179,11 +174,11 @@ const startServer = function (serverConfig, cb = () => { }) {
                  */
                 res.writeHead(200, { 'Content-Type': 'text/plain' });
                 res.end('Stopping workflows');
-                clearInterval(global.ehorsh);
-                
-                // global.jobIDs.forEach((id) => {
-                //     clearInterval(jobId);
-                // })
+
+                for (const [_, jobID] of Object.entries(jobIDs)) {
+                    clearInterval(jobID);
+                }
+                jobIDs = new Map();
             }
         } else if (req.method === 'GET') {
             if (path === "/search") { // e.g. /search?q=hello
@@ -216,10 +211,14 @@ const startServer = function (serverConfig, cb = () => { }) {
     // create worker and storage groups
     createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPort).then(() => {
         console.log('all groups are created');
-        server.listen(serverConfig.port, serverConfig.ip, () => {
-            console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
-            cb(server);
-        })
+        // init uncrawled database
+        const url = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
+        global.distribution.uncrawledURLs.store.put(url, url, () => {
+            server.listen(serverConfig.port, serverConfig.ip, () => {
+                console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
+                cb(server);
+            })
+        });
     });
 }
 

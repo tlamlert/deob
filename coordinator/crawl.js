@@ -37,14 +37,20 @@ crawl['map'] = (url, _) => {
         } else {
           targetDatabase = global.distribution.rawPageContents;
         }
-        
+
         // TODO: pageContent might be too large to be sent over HTTP
         // might need to configure the server to allow a larger size
         const MAX_PAGE_SIZE = 900;
         pageContent = pageContent.substring(0, MAX_PAGE_SIZE);
+        console.log("typeof pageContent : ", typeof pageContent);
+        console.log("typeof url : ", typeof url);
 
         // Store the page content on the appropriate database
-        targetDatabase.store.put(pageContent, url, ()=>{
+        targetDatabase.store.put(pageContent, url, (e,v) => {
+          if (e && Object.keys(e).length) {
+            console.log(e);
+          }
+
           let out = {};
           out[url] = 1;
           resolve(out);
@@ -74,24 +80,25 @@ const MAX_NUM_URLS = 100;
 
 function executeCrawlWorkflow() {
   // Get all uncralwed URLs from `uncrawledURLs` 
+  console.log('executing crawl workflow');
   global.distribution.uncrawledURLs.store.get(null, (err, uncrawledURLs) => {
-    if (err) {
-      console.error(err);
+    if (Object.keys(err).length > 0) {
+      console.error("executeCrawlWorkflow 1 ", err);
       return err;
     }
 
     // Workflow configuration
     const workflowConfig = {
-      keys: uncrawledURLs.splice(MAX_NUM_URLS),
+      keys: uncrawledURLs.splice(0, MAX_NUM_URLS),
       map: crawl.map,
       reduce: crawl.reduce,
       memory: true,
     }
 
     // Perform the mr workflow
-    global.distribution.workers.exec(workflowConfig, (err, cralwedURLs) => {
-      if (err) {
-        console.error(err);
+    global.distribution.workers.mr.exec(workflowConfig, (err, cralwedURLs) => {
+      if (err && Object.keys(err) > 0) {
+        console.error("executeCrawlWorkflow 2", err);
         return err;
       }
 

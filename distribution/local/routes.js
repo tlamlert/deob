@@ -85,9 +85,8 @@ routes[_0x391ef9(0x1ad)] = function (_0x1992a0, _0x332d72) {
 }, routes['put'] = function (_0x366a32, _0x4a7455, _0x121440) {
     routesStore[_0x4a7455] = _0x366a32;
     _0x121440 && _0x121440(null, _0x4a7455);
-    ;
 }, routes['del'] = function (_0x4a7455, _0x121440) {
     delete routesStore[_0x4a7455];
+    console.log('deleted service: ', _0x4a7455)
     _0x121440 && _0x121440(null, _0x4a7455);
-    ;
 }, routesStore[_0x391ef9(0x1ae)] = routes, routesStore[_0x391ef9(0x1a1)] = require('./comm'), routesStore[_0x391ef9(0x19f)] = require('./status'), routesStore[_0x391ef9(0x19c)] = require('./groups'), routesStore[_0x391ef9(0x1b0)] = require('./gossip'), routesStore[_0x391ef9(0x1a6)] = require('./mem'), routesStore[_0x391ef9(0x1a3)] = require('./store'), module['exports'] = routes;/* eslint-enable */

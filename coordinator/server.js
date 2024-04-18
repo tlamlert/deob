@@ -19,7 +19,8 @@ const groupsTemplate = require('../distribution/all/groups');
 //          Import workflows
 // =======================================
 
-const { executeCrawlAndMapWorkflow } = require('./crawlAndMap.js');
+const { executeCrawlGetBookMetadataWorkflow } = require('./crawlGetBookMetadata.js');
+const { executeCrawlGetURLsWorkflow } = require('./crawlGetURLs.js');
 const { executeCrawlWorkflow } = require('./crawl.js');
 const { executeGetURLsWorkflow } = require('./getURLs.js');
 const { executeGetBookMetadataWorkflow } = require('./getBookMetadata.js');
@@ -27,7 +28,8 @@ const { executeIndexingWorkflow } = require('./index.js');
 
 // Workflows are in their corresponding files
 const recurringWorkflows = [
-    executeCrawlAndMapWorkflow,
+    // executeCrawlGetBookMetadataWorkflow,
+    executeCrawlGetURLsWorkflow,
     // executeCrawlWorkflow,
     // executeGetURLsWorkflow,
     // executeGetBookMetadataWorkflow,
@@ -107,29 +109,37 @@ const createWorkerAndStorageGroups = function (workers, workerPort) {
     //          Worker Groups
     // =======================================
 
-    // Worker : The group the connects all the EC2 instances (the workers)
-    // NOTE: DO NOT INCLUDE THE SERVER/COORDINATOR IN THE GROUP
-    createGenericGroup("workers"),
+    // // Worker : The group the connects all the EC2 instances (the workers)
+    // // NOTE: DO NOT INCLUDE THE SERVER/COORDINATOR IN THE GROUP
+    // createGenericGroup("workers"),
 
     // =======================================
     //          Storage Groups
     // =======================================
 
-    // uncrawledURLs : Responsible for storing the URLs to visit
-    // (url, null) 
-    createGenericGroup("uncrawledURLs"),
+    // // uncrawledURLs : Responsible for storing the URLs to visit
+    // // (url, null) 
+    // createGenericGroup("uncrawledURLs"),
 
     // crawledUrls : Responsible for storing the URLs we already visited
     // (url, null)
     createGenericGroup("crawledURLs"),
 
-    // rawBookContents : Responsible for storing the raw book contents (txt files)
-    // (url, book-content)
-    createGenericGroup("rawBookContents"),
+    // // rawBookContents : Responsible for storing the raw book contents (txt files)
+    // // (url, book-content)
+    // createGenericGroup("rawBookContents"),
 
-    // rawPageContents : Responsible for storing the raw non-book contents (html, etc)
-    // (url, page-content)
-    createGenericGroup("rawPageContents"),
+    // uncralwedPageURLs : Responsible for storing the uncrawled page URLs
+    // (url, null)
+    createGenericGroup("uncrawledPageURLs"),
+
+    // uncralwedBookURLs : Responsible for storing the uncrawled book URLs
+    // (url, null)
+    createGenericGroup("uncrawledBookURLs"),
+
+    // // rawPageContents : Responsible for storing the raw non-book contents (html, etc)
+    // // (url, page-content)
+    // createGenericGroup("rawPageContents"),
 
     // bookMetadata : Responsible for stroing the metadata of crawled books
     // (url, metadata)
@@ -216,14 +226,16 @@ const startServer = function (serverConfig, cb = () => { }) {
     createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPort).then(() => {
         console.log('all groups are created');
         // init uncrawled database
-        // const url = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
-        const url = 'https://atlas.cs.brown.edu/data/gutenberg/';
-        global.distribution.uncrawledURLs.store.put(url, url, () => {
-            server.listen(serverConfig.port, serverConfig.ip, () => {
-                console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
-                cb(server);
-            })
-        });
+        const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
+        const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
+        global.distribution.uncrawledPageURLs.store.put(pageUrl, pageUrl, () => {
+            global.distribution.uncrawledBookURLs.store.put(bookUrl, bookUrl, () => {
+                server.listen(serverConfig.port, serverConfig.ip, () => {
+                    console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
+                    cb(server);
+                })
+            });
+        })
     });
 }
 

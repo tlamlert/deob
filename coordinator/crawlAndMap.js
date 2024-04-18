@@ -34,47 +34,43 @@ crawl['map'] = (url, _) => {
       });
       res.on('end', () => {
         // Determine where to store the page content
-        let targetDatabase;
-        let out;
         if (url.endsWith('.txt')) {
-            out = getBookMetadata.map(url, pageContent);  
-          targetDatabase = global.distribution.rawBookContents;
+            resolve(getBookMetadata.map(url, pageContent));
         } else {
-
-          targetDatabase = global.distribution.rawPageContents;
+            resolve(getURLs.map(url, pageContent));
         }
 
-        // TODO: pageContent might be too large to be sent over HTTP
-        // might need to configure the server to allow a larger size
-        const MAX_PAGE_SIZE = 900;
-        pageContent = pageContent.substring(0, MAX_PAGE_SIZE);
-        console.log("typeof pageContent : ", typeof pageContent);
-        console.log("typeof url : ", typeof url);
+        // // TODO: pageContent might be too large to be sent over HTTP
+        // // might need to configure the server to allow a larger size
+        // const MAX_PAGE_SIZE = 900;
+        // pageContent = pageContent.substring(0, MAX_PAGE_SIZE);
 
-        // Store the page content on the appropriate database
-        targetDatabase.store.put(pageContent, url, (e,v) => {
-          if (e && Object.keys(e).length) {
-            console.log(e);
-          }
+        // // Store the page content on the appropriate database
+        // targetDatabase.store.put(pageContent, url, (e,v) => {
+        //   if (e && Object.keys(e).length) {
+        //     console.log(e);
+        //   }
 
-          let out = {};
-          out[url] = 1;
-          resolve(out);
-        });
+        //   let out = {};
+        //   out[url] = 1;
+        //   resolve(out);
+        // });
       });
     });
   });
 };
 
-crawl['reduce'] = (url, _count) => {
+crawl['reduce'] = (url, value) => {
   /**
    * Count the total number of URLs. Totalcount should be 1 given that input URLs are distinct
    * 
    * Output: (url, totalCount)
    */
-  let out = {};
-  out[url] = _count.reduce((a, b) => a + b, 0);
-  return out;
+  if (url.endsWith('.txt')) {
+    return getBookMetadata.reduce(url, value);
+  } else {
+    return getURLs.reduce(url, value);
+  }
 };
 
 // =======================================

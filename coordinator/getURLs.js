@@ -12,16 +12,6 @@
 const getURLs = {};
 
 getURLs['map'] = (url, pageContent) => {
-  // // construct output
-  // let out = [];
-  // rawLinks.forEach((link) => {
-  //   let o = {};
-  //   let newUrl = new URL(link, base).href;
-  //   o[newUrl] = 1;
-  //   out.push(o);
-  // });
-  // return out
-
   // convert the given url to a directory
   if (!url.endsWith('.html') && !url.endsWith('/')) {
     url += '/';

@@ -135,9 +135,17 @@ const mr = function(config) {
       },
 
       mrService.reduceNotify = function(callback=()=>{}) {
-        const result = [...this.reduceInput.entries()].map(
-            (args) => this.reducer(...args));
-        callback(null, result);
+        // const result = [...this.reduceInput.entries()].map(
+        //     (args) => this.reducer(...args));
+        const result = [];
+        this.reduceInput.forEach((key, value) => {
+          Promise.resolve(this.reducer(key, vale)).then((output) => {
+            result.push(output);
+            if (result.length == this.reduceInput.size) {
+              callback(null, result);
+            };
+          });
+        });
       };
 
       // Setup, Map, and Reduce

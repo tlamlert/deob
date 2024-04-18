@@ -28,8 +28,8 @@ const { executeIndexingWorkflow } = require('./index.js');
 const recurringWorkflows = [
     executeCrawlWorkflow,
     // executeGetURLsWorkflow,
-    executeGetBookMetadataWorkflow,
-    // executeIndexingWorkflow,
+    // executeGetBookMetadataWorkflow,
+    executeIndexingWorkflow,
 ];
 
 // // TODO: This is not even a mr workflow
@@ -158,7 +158,7 @@ const startServer = function (serverConfig, cb = () => { }) {
                 const TIME_BETWEEN_JOBS = 1000;
                 recurringWorkflows.forEach((wf, i) => {
                     let locked = false;
-                    jobIDs[wf] = setInterval(() => {
+                    const jobID = setInterval(() => {
                         console.log(`workflow ${i} triggered!`);
                         if (!locked) {
                             locked = true;
@@ -166,6 +166,7 @@ const startServer = function (serverConfig, cb = () => { }) {
                             locked = false;
                         }
                     }, TIME_BETWEEN_JOBS);
+                    jobIDs.set(wf, jobID);
                 })
 
             } else if (path === '/stop') {

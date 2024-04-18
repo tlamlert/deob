@@ -40,8 +40,8 @@ getBookMetadata["map"] = (url, pageContent) => {
     // If we can't find the regex, ignore this file
     console.log("titleText GOT NOTHING")
     out[url] = "N/A";
+    return out;
   }
-  return out;
 };
 
 getBookMetadata["reduce"] = (key, values) => {

@@ -19,6 +19,7 @@ const groupsTemplate = require('../distribution/all/groups');
 //          Import workflows
 // =======================================
 
+const { executeCrawlAndMapWorkflow } = require('./crawlAndMap.js');
 const { executeCrawlWorkflow } = require('./crawl.js');
 const { executeGetURLsWorkflow } = require('./getURLs.js');
 const { executeGetBookMetadataWorkflow } = require('./getBookMetadata.js');
@@ -26,10 +27,11 @@ const { executeIndexingWorkflow } = require('./index.js');
 
 // Workflows are in their corresponding files
 const recurringWorkflows = [
-    executeCrawlWorkflow,
+    executeCrawlAndMapWorkflow,
+    // executeCrawlWorkflow,
     // executeGetURLsWorkflow,
     // executeGetBookMetadataWorkflow,
-    executeIndexingWorkflow,
+    // executeIndexingWorkflow,
 ];
 
 // // TODO: This is not even a mr workflow
@@ -156,14 +158,15 @@ const startServer = function (serverConfig, cb = () => { }) {
 
                 // Set interval for each workflow in the list to manage access control to distributed stores
                 const TIME_BETWEEN_JOBS = 1000;
+                let locked = false;
                 recurringWorkflows.forEach((wf, i) => {
-                    let locked = false;
                     const jobID = setInterval(() => {
                         console.log(`workflow ${i} triggered!`);
                         if (!locked) {
                             locked = true;
-                            wf();
-                            locked = false;
+                            wf(() => {
+                                locked = false;
+                            });
                         }
                     }, TIME_BETWEEN_JOBS);
                     jobIDs.set(wf, jobID);
@@ -213,8 +216,8 @@ const startServer = function (serverConfig, cb = () => { }) {
     createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPort).then(() => {
         console.log('all groups are created');
         // init uncrawled database
-        const url = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
-        // const url = 'https://atlas.cs.brown.edu/data/gutenberg/';
+        // const url = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
+        const url = 'https://atlas.cs.brown.edu/data/gutenberg/';
         global.distribution.uncrawledURLs.store.put(url, url, () => {
             server.listen(serverConfig.port, serverConfig.ip, () => {
                 console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);

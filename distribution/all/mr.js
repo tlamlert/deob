@@ -5,7 +5,7 @@ const mr = function(config) {
   context.gid = config.gid || 'all';
 
   return {
-    exec: (configuration, callback) => {
+    exec: (configuration, nextExecution) => {
       /* Change this with your own exciting Map Reduce code! */
       // console.log('keys; ', configuration.keys);
 
@@ -135,11 +135,13 @@ const mr = function(config) {
       },
 
       mrService.reduceNotify = function(callback=()=>{}) {
-        // const result = [...this.reduceInput.entries()].map(
-        //     (args) => this.reducer(...args));
         const result = [];
-        this.reduceInput.forEach((key, value) => {
-          Promise.resolve(this.reducer(key, vale)).then((output) => {
+        if (this.reduceInput.size == 0) {
+          callback(null, []);
+        }
+
+        this.reduceInput.forEach((value, key) => {
+          Promise.resolve(this.reducer(key, value)).then((output) => {
             result.push(output);
             if (result.length == this.reduceInput.size) {
               callback(null, result);
@@ -160,13 +162,13 @@ const mr = function(config) {
                 // console.log('map output: ', v);
                 const reduceNotify = {service: mrName, method: 'reduceNotify'};
                 groupService.comm.send([], reduceNotify, (e, v) => {
-                  // console.log('reduce output: ', v);
                   const result = Object.values(v).flat();
-                  // TODO: need to make this work baby
-                  // // deregister using routes.del
-                  // groupService.routes.del(mrName, (e, v) => {
-                  //   callback(null, result);
-                  // });
+                  // deregister using routes.del
+                  groupService.routes.del(mrName, (e, v) => {
+                    // // TODO: need to make this work baby
+                    // callback(null, result);
+                    nextExecution(null, result);
+                  });
                 });
               });
             });

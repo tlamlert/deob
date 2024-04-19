@@ -14,7 +14,9 @@ const index = {};
 /**
  * Takes a url and corresponding bookMetadata and outputs a list of
  * ngram-url pairs. These pairs are of type list.
- *
+ * 
+ * Note: bookMetadata will be 'N/A' if the URL doesn't have metadata
+ * 
  * @param {*} url : website URL
  * @param {*} bookMetadata : String corresponding to url
  * @return List of ngram-url pairs (i.e. [[ngram, url], ...] )
@@ -28,17 +30,6 @@ index['map'] = (url, bookMetadata) => {
     out.push(o);
   });
   return out;
-
-  // return new Promise((resolve) => {
-  // const ngrams = global.utils.preprocess(bookMetadata);
-  // const out = [];
-  // ngrams.forEach((ngram) => {
-  //   const o = {};
-  //   o[ngram] = url;
-  //   out.push(o);
-  // });
-  // resolve(out);
-  // })
 };
 
 /**
@@ -78,7 +69,8 @@ index['reduce'] = (ngram, urls) => {
         res.push([url, count]);
       }
 
-      // TODO: Sort list
+      // Optional : Sort list here instead of query; but this would introduce a lot more
+      //  computation, so maybe not.
       // res.sort((a, b) => b[1] - a[1]);
 
       // Store results as [[url, count], ... ]

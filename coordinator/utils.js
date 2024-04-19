@@ -45,6 +45,10 @@ const errorLog = function(msg, filename='debug.txt') {
  * Returns: List of ngrams (List[String])
  */
 const preprocess = function(text, maxN=3) {
+  if (typeof text !== 'string') {
+    text = '';
+  }
+
   // Get rid of characters that are not alphabetic
   //   and removes extra newlines caused by first step
   const bagOfWords = text.replace(/[^A-Za-z]/g, '\n').replace(/\n{2,}/g, '\n');

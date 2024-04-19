@@ -5,18 +5,15 @@
  */
 const fs = require('fs');
 const path = require('path');
-global.fs = fs;
-global.path = path;
+const natural = require('natural');
+global.natural = natural;
 
 // Read stop words from file
 const STOP_WORD_FILE = path.join(__dirname, '/data/stopwords.txt');
 const stopwordsData = fs.readFileSync(STOP_WORD_FILE, 'utf8');
-const bagOfStopwords = stopwordsData.split('\n').filter(Boolean);
-const natural = require('natural');
-global.natural = natural;
-global.bagOfStopwords = bagOfStopwords;
+global.bagOfStopwords = stopwordsData.split('\n').filter(Boolean);
 
-global.newDebugSesh = true;
+let newDebugSesh = true;
 const errorLog = function(msg, filename='debug.txt') {
   if (msg instanceof Error) {
     msg = msg.message;
@@ -25,18 +22,17 @@ const errorLog = function(msg, filename='debug.txt') {
   }
 
   // If running for the first time, clear the file with new write
-  if (global.newDebugSesh) {
-    global.fs.writeFileSync(global.path.join(__dirname, filename), msg + '\n');
-    global.newDebugSesh = false;
+  if (newDebugSesh) {
+    fs.writeFileSync(path.join(__dirname, filename), msg + '\n');
+    newDebugSesh = false;
   }
   // Else append contents
   else {
-    global.fs.appendFileSync(global.path.join(__dirname, filename), msg + '\n');
+    fs.appendFileSync(path.join(__dirname, filename), msg + '\n');
   }
 
   // Also write contents to stdout
-  const logStdout = process.stdout;
-  logStdout.write('\x1b[31m Error Log: \x1b[0m' + msg + '\n');
+  process.stdout.write('\x1b[31m Error Log: \x1b[0m' + msg + '\n');
 };
 
 // =====================================================================

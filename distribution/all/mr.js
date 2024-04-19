@@ -140,12 +140,16 @@ const mr = function(config) {
           callback(null, []);
         }
 
+        let counter = this.reduceInput.size;
         this.reduceInput.forEach((value, key) => {
           Promise.resolve(this.reducer(key, value)).then((output) => {
-            result.push(output);
-            if (result.length == this.reduceInput.size) {
+            if (output) {
+              result.push(output);
+            }
+            counter -= 1;
+            if (!counter) {
               callback(null, result);
-            };
+            }
           });
         });
       };

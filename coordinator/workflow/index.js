@@ -5,6 +5,8 @@
  * https://hackmd.io/I9s_IMAfT4ub5kIkjAwD0w?view#N-Gram-Workflow--Indexing-Workflow-Helen
  */
 
+const workflow = require("../endpoint/workflow");
+
 // =======================================
 //        Map / Reduce Functions
 // =======================================
@@ -20,6 +22,7 @@ const index = {};
  * @return List of ngram-url pairs (i.e. [[ngram, url], ...] )
  */
 index['map'] = (url, bookMetadata) => {
+  console.log(url, bookMetadata);
   const ngrams = global.utils.preprocess(bookMetadata);
   const out = [];
   ngrams.forEach((ngram) => {
@@ -28,17 +31,6 @@ index['map'] = (url, bookMetadata) => {
     out.push(o);
   });
   return out;
-
-  // return new Promise((resolve) => {
-  // const ngrams = global.utils.preprocess(bookMetadata);
-  // const out = [];
-  // ngrams.forEach((ngram) => {
-  //   const o = {};
-  //   o[ngram] = url;
-  //   out.push(o);
-  // });
-  // resolve(out);
-  // })
 };
 
 /**
@@ -102,26 +94,37 @@ index['reduce'] = (ngram, urls) => {
 
 function executeIndexingWorkflow(config) {
   // Get all book metadata from `bookMetadata`
-  global.distribution.bookMetadata.store.get(null, (err, metadatas) => {
-    if (err && Object.keys(err).length > 0) {
-      console.error(err);
-      return err;
-    }
-
-    // Workflow configuration
-    const workflowConfig = {
-      keys: metadatas.splice(0, config.MAX_KEYS_PER_EXECUTION),
-      map: index.map,
-      reduce: index.reduce,
-      memory: true,
-    };
-
-    // Perform the mr workflow
-    global.distribution.bookMetadata.mr.exec(workflowConfig, (err, metadatas) => {
-      if (err) {
-        console.error('Indexing workflow error: ' + err);
-        return err;
+  return new Promise((resolve, reject) => {
+    global.distribution.bookMetadata.store.get(null, (err, metadatas) => {
+      if (err && Object.keys(err).length > 0) {
+        reject(err);
+        return;
       }
+
+      // TODO: wouldn't this just process the first 100 keys over and over?
+      // Workflow configuration
+      const workflowConfig = {
+        keys: metadatas.splice(0, config.MAX_KEYS_PER_EXECUTION),
+        map: index.map,
+        reduce: index.reduce,
+        memory: true,
+      };
+
+      if (workflowConfig.keys.length == 0) {
+        reject();
+        return;
+        // TODO: if reject must return;
+      }
+
+      // Perform the mr workflow
+      global.distribution.bookMetadata.mr.exec(workflowConfig, (err, metadatas) => {
+        if (err) {
+          console.error('Indexing workflow error: ' + err);
+          reject(err);
+        } else {
+          resolve(workflowConfig.keys.length);
+        }
+      });
     });
   });
 }

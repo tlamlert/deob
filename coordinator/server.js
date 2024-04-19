@@ -129,7 +129,7 @@ const startServer = function(serverConfig, cb = () => { }) {
     if (endpoints.hasOwnProperty(req.method)) {
       if (endpoints[req.method].hasOwnProperty(url.pathname)) {
         const asyncEndpoint = endpoints[req.method][url.pathname](url.query);
-        const serializeResponse = (response) => res.end(distribution.util.serialize(response));
+        const serializeResponse = (response) => res.end(JSON.stringify(response));
         Promise.resolve(asyncEndpoint).then(serializeResponse);
       } else {
         res.end(`${url.pathname} path not found!`);

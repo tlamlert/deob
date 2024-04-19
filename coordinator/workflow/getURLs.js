@@ -62,6 +62,15 @@ getURLs['reduce'] = (url, _count) => {
       crawledDatabase = global.distribution.crawledURLs;
     }
 
+    // Filter out invalid links
+    // TODO: This is hard-coded but it shouldn't be
+    // TODO: We might also want to filter out duplicate links with query for optimization hehe
+    if (!url || !url.startsWith('https://atlas.cs.brown.edu/data/gutenberg/')) {
+      // TODO: Also should not use resolve to return null :(
+      resolve(null);
+      return;
+    };
+
     // filter out duplicate links
     const out = {};
     crawledDatabase.store.get(url, (err, value) => {
@@ -77,6 +86,7 @@ getURLs['reduce'] = (url, _count) => {
             global.utils.errorLog(err);
             reject(err);
           } else {
+            // TODO: something value is undefined and that's not good baby
             console.log('uncrawledURLs put success', value);
             out[url] = null;
             resolve(out);
@@ -100,31 +110,32 @@ function executeGetURLsWorkflow(config) {
   // Get all crawled URLs from `crawledURLs`
   // Note: This assumes that Crawl was run before such that there exists
   // relevant data on the worker nodes
-  global.distribution.uncrawledPageURLs.store.get(null, (err, uncralwedPageURLs) => {
-    // TODO: something might be wrong with this
-    // if (err && Object.keys(err).length > 0) {
-    //   global.utils.errorLog(err);
-    //   return err;
-    // };
+  return new Promise((resolve, reject) => {
+    global.distribution.uncrawledPageURLs.store.get(null, (err, uncralwedPageURLs) => {
+      // TODO: something might be wrong with this
+      // if (err && Object.keys(err).length > 0) {
+      //   reject(err);
+      // };
 
-    // Define the workflow configuration
-    const pageURLsToCrawl = uncralwedPageURLs.splice(0, config.MAX_KEYS_PER_EXECUTION);
-    const workflowConfig = {
-      keys: pageURLsToCrawl,
-      map: getURLs['map'],
-      reduce: getURLs['reduce'],
-      memory: true,
-    };
+      // Define the workflow configuration
+      const pageURLsToCrawl = uncralwedPageURLs.splice(0, config.MAX_KEYS_PER_EXECUTION);
+      const workflowConfig = {
+        keys: pageURLsToCrawl,
+        map: getURLs['map'],
+        reduce: getURLs['reduce'],
+        memory: true,
+      };
 
-    // Perform the getBookMetadata map reduce workflow
-    global.distribution.uncrawledPageURLs.mr.exec(workflowConfig, (err, _) => {
-      if (err && Object.keys(err).length > 0) {
-        return err;
-      }
+      // Perform the getBookMetadata map reduce workflow
+      global.distribution.uncrawledPageURLs.mr.exec(workflowConfig, (err, _) => {
+        if (err && Object.keys(err).length > 0) {
+          reject(err);
+        }
 
-      // Remove parsed URLs from uncrawledBookURLs
-      pageURLsToCrawl.forEach((url) => {
-        global.distribution.uncrawledPageURLs.store.del(url, () => {});
+        // Remove parsed URLs from uncrawledBookURLs
+        pageURLsToCrawl.forEach((url) => {
+          global.distribution.uncrawledPageURLs.store.del(url, () => { resolve(pageURLsToCrawl.length) });
+        });
       });
     });
   });

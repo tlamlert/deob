@@ -68,30 +68,31 @@ function executeGetBookMetadataWorkflow(config) {
   // Get all crawled URLs from `crawledURLs`
   // Note: This assumes that Crawl was run before such that there exists
   // relevant data on the worker nodes
-  global.distribution.uncrawledBookURLs.store.get(null, (err, uncralwedBookURLs) => {
-    if (err && Object.keys(err).length > 0) {
-      global.utils.errorLog(err);
-      return err;
-    };
-
-    // Define the workflow configuration
-    const workflowConfig = {
-      keys: uncralwedBookURLs.splice(0, config.MAX_KEYS_PER_EXECUTION),
-      map: getBookMetadata['map'],
-      reduce: getBookMetadata['reduce'],
-      memory: true,
-    };
-
-    // Perform the getBookMetadata map reduce workflow
-    global.distribution.uncrawledBookURLs.mr.exec(workflowConfig, (err, bookMetadata) => {
+  return new Promise((resolve, reject) => {
+    global.distribution.uncrawledBookURLs.store.get(null, (err, uncralwedBookURLs) => {
       if (err && Object.keys(err).length > 0) {
-        return err;
-      }
-
-      // Remove parsed URLs from uncrawledBookURLs
-      const crawledBookURLs = bookMetadata.map(Object.keys).flat();
-      crawledBookURLs.forEach((url) => {
-        global.distribution.uncrawledBookURLs.store.del(url, () => {});
+        reject(err);
+      };
+  
+      // Define the workflow configuration
+      const workflowConfig = {
+        keys: uncralwedBookURLs.splice(0, config.MAX_KEYS_PER_EXECUTION),
+        map: getBookMetadata['map'],
+        reduce: getBookMetadata['reduce'],
+        memory: true,
+      };
+  
+      // Perform the getBookMetadata map reduce workflow
+      global.distribution.uncrawledBookURLs.mr.exec(workflowConfig, (err, bookMetadata) => {
+        if (err && Object.keys(err).length > 0) {
+          reject(err);
+        }
+  
+        // Remove parsed URLs from uncrawledBookURLs
+        const crawledBookURLs = bookMetadata.map(Object.keys).flat();
+        crawledBookURLs.forEach((url) => {
+          global.distribution.uncrawledBookURLs.store.del(url, () => { resolve(crawledBookURLs.length) });
+        });
       });
     });
   });

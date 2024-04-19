@@ -9,16 +9,16 @@
 //        Map / Reduce Functions
 // =======================================
 
-const crawlGetBookMetadata = {};
+const getBookMetadata = {};
 
-crawlGetBookMetadata["map"] = (url, _) => {
+getBookMetadata['map'] = (url, _) => {
   /**
    * Extract metadata from book page content
    *  Store metadata in `bookMetadata`
    *  output: (url, metadata)
    * */
   return new Promise((resolve) => {
-    global.https.get(url, { rejectUnauthorized: false }, (res) => {
+    global.https.get(url, {rejectUnauthorized: false}, (res) => {
       // Concatenate all data chunk into page content
       let pageContent = '';
       res.on('data', (d) => {
@@ -28,13 +28,13 @@ crawlGetBookMetadata["map"] = (url, _) => {
         // Get regex match
         const regex = /Title:(.*?)(?=Author:)/s;
         const match = regex.exec(pageContent);
-    
+
         let out = {};
         if (match) {
           // Make the title on one line
           let titleText = match[1].trim();
-          titleText = titleText.replace(/[\n\t]/g, " ");
-          titleText = titleText.replace(/\s+/g, " ");
+          titleText = titleText.replace(/[\n\t]/g, ' ');
+          titleText = titleText.replace(/\s+/g, ' ');
           out[url] = titleText;
           // Only store if regex match can be found
           global.distribution.bookMetadata.store.put(titleText, url, (e, v) => {
@@ -42,7 +42,7 @@ crawlGetBookMetadata["map"] = (url, _) => {
           });
         } else {
           // If we can't find the regex, ignore this file
-          out[url] = "N/A";
+          out[url] = 'N/A';
           resolve(out);
         }
       });
@@ -50,7 +50,7 @@ crawlGetBookMetadata["map"] = (url, _) => {
   });
 };
 
-crawlGetBookMetadata["reduce"] = (key, values) => {
+getBookMetadata['reduce'] = (key, values) => {
   /**
    * Do nothing.
    * Output: (url, metadata)
@@ -64,10 +64,7 @@ crawlGetBookMetadata["reduce"] = (key, values) => {
 //          getBookMetadata Job
 // =======================================
 
-// Job Configuration
-const MAX_NUM_URLS = 100;
-
-function executeCrawlGetBookMetadataWorkflow() {
+function executeGetBookMetadataWorkflow(config) {
   // Get all crawled URLs from `crawledURLs`
   // Note: This assumes that Crawl was run before such that there exists
   // relevant data on the worker nodes
@@ -79,9 +76,9 @@ function executeCrawlGetBookMetadataWorkflow() {
 
     // Define the workflow configuration
     const workflowConfig = {
-      keys: uncralwedBookURLs.splice(0, MAX_NUM_URLS),
-      map: crawlGetBookMetadata['map'],
-      reduce: crawlGetBookMetadata['reduce'],
+      keys: uncralwedBookURLs.splice(0, config.MAX_KEYS_PER_EXECUTION),
+      map: getBookMetadata['map'],
+      reduce: getBookMetadata['reduce'],
       memory: true,
     };
 
@@ -95,12 +92,12 @@ function executeCrawlGetBookMetadataWorkflow() {
       const crawledBookURLs = bookMetadata.map(Object.keys).flat();
       crawledBookURLs.forEach((url) => {
         global.distribution.uncrawledBookURLs.store.del(url, () => {});
-      })
+      });
     });
   });
 }
 
 module.exports = {
-  crawlGetBookMetadata: crawlGetBookMetadata,
-  executeCrawlGetBookMetadataWorkflow: executeCrawlGetBookMetadataWorkflow,
+  getBookMetadataa: getBookMetadata,
+  executeGetBookMetadataWorkflow: executeGetBookMetadataWorkflow,
 };

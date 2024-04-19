@@ -4,8 +4,7 @@ const id = distribution.util.id;
 
 const groupsTemplate = require('../../distribution/all/groups');
 
-const { index } = require('../../coordinator/index.js');
-const utils = require('../../coordinator/utils.js');
+const {index} = require('../../coordinator/index.js');
 
 const metadataGroup = {};
 const invertedMetadataGroup = {};
@@ -94,69 +93,69 @@ afterAll((done) => {
 
 
 test('index[map]', (done) => {
-    global.distribution = distribution;
+  global.distribution = distribution;
 
-    const url = "www.test.com";
-    const metadata = "The United States' Constitution";
-    const result = index.map(url, metadata);
+  const url = 'www.test.com';
+  const metadata = 'The United States\' Constitution';
+  const result = index.map(url, metadata);
 
-    const expected = [
-        {'unit' : "www.test.com"},
-        {'constitut' : "www.test.com"},
-        {'unit constitut' : "www.test.com"},
-    ];
-    expect(result).toEqual(expect.arrayContaining(expected));
-    done();
+  const expected = [
+    {'unit': 'www.test.com'},
+    {'constitut': 'www.test.com'},
+    {'unit constitut': 'www.test.com'},
+  ];
+  expect(result).toEqual(expect.arrayContaining(expected));
+  done();
 });
 
 test('index[reduce]', (done) => {
-    // rm -rf ./store/*
+  // rm -rf ./store/*
 
-    global.distribution = distribution;
+  global.distribution = distribution;
 
-    const ngram = 'sheep shoop';
-    const urls = ['www.test.com', 'www.bacon.edu', 'www.bacon.edu', 'www.bacon.edu', 'www.apple.org', 'www.test.com'];
+  const ngram = 'sheep shoop';
+  const urls = ['www.test.com', 'www.bacon.edu', 'www.bacon.edu', 'www.bacon.edu', 'www.apple.org', 'www.test.com'];
 
-    const expected = {'sheep shoop' : [['www.bacon.edu', 3], ['www.test.com', 2], ['www.apple.org', 1]]};
+  const expected = {'sheep shoop': [['www.bacon.edu', 3], ['www.test.com', 2], ['www.apple.org', 1]]};
 
-    Promise.resolve(index.reduce(ngram, urls).then((result) => {
-        // Test return value
-        expect(Object.keys(result)).toEqual(Object.keys(expected));
-        expect(result[ngram]).toEqual(expect.arrayContaining(expected[ngram]));
+  Promise.resolve(index.reduce(ngram, urls).then((result) => {
+    // Test return value
+    expect(Object.keys(result)).toEqual(Object.keys(expected));
+    expect(result[ngram]).toEqual(expect.arrayContaining(expected[ngram]));
 
-        // Test distributed store.get()
-        distribution.invertedMetadata.store.get('sheep shoop', (e, v) => {
-            expect(e).toBeNull();
-            expect(v).toEqual(expect.arrayContaining(expected[ngram]));
-            done();
-        })
-    }))
+    // Test distributed store.get()
+    distribution.invertedMetadata.store.get('sheep shoop', (e, v) => {
+      expect(e).toBeNull();
+      expect(v).toEqual(expect.arrayContaining(expected[ngram]));
+      done();
+    });
+  }));
 });
 
 test('index[reduce] w/ existing ngram object', (done) => {
-    // rm -rf ./store/*
+  // rm -rf ./store/*
 
-    global.distribution = distribution;
+  global.distribution = distribution;
 
-    // Put ngram object
-    const ngram = 'beep boop';
-    const oldURLs = [['www.bacon.edu', 3], ['www.test.com', 2], ['www.apple.org', 1]];
-    distribution.invertedMetadata.store.put(oldURLs, ngram, (e,v) => {
+  // Put ngram object
+  const ngram = 'beep boop';
+  const oldURLs = [['www.bacon.edu', 3], ['www.test.com', 2], ['www.apple.org', 1]];
+  distribution.invertedMetadata.store.put(oldURLs, ngram, (e, v) => {
+    expect(e).toBeNull();
+    // Add new urls
+    const newURLs = ['www.chicken.com', 'www.test.com'];
+    const expected = {'beep boop': [['www.bacon.edu', 3], ['www.test.com', 3], ['www.apple.org', 1], ['www.chicken.com', 1]]};
+
+    Promise.resolve(index.reduce(ngram, newURLs).then((result) => {
+      expect(Object.keys(result)).toEqual(Object.keys(expected));
+      expect(result[ngram]).toEqual(expect.arrayContaining(expected[ngram]));
+
+      // Test distributed store.get()
+      distribution.invertedMetadata.store.get('beep boop', (e, v) => {
         expect(e).toBeNull();
-        // Add new urls
-        const newURLs = ["www.chicken.com", "www.test.com"];
-        const expected = {'beep boop' : [['www.bacon.edu', 3], ['www.test.com', 3], ['www.apple.org', 1], ["www.chicken.com", 1]]};
-
-        Promise.resolve(index.reduce(ngram, newURLs).then((result) => {
-            expect(Object.keys(result)).toEqual(Object.keys(expected));
-            expect(result[ngram]).toEqual(expect.arrayContaining(expected[ngram]));
-
-            // Test distributed store.get()
-            distribution.invertedMetadata.store.get('beep boop', (e, v) => {
-                expect(e).toBeNull();
-                expect(v).toEqual(expect.arrayContaining(expected[ngram]));
-                done();
-            })
-        }))
-    })
+        expect(v).toEqual(expect.arrayContaining(expected[ngram]));
+        done();
+      });
+    }));
+  });
 });

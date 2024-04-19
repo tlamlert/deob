@@ -4,7 +4,7 @@ const id = distribution.util.id;
 
 const groupsTemplate = require('../../distribution/all/groups');
 
-const { crawl } = require('../../coordinator/crawl.js');
+const {crawl} = require('../../coordinator/crawl.js');
 
 const rpcGroup = {};
 const rbcGroup = {};
@@ -94,7 +94,7 @@ test('crawl[map]: non-book page', (done) => {
       expect(result).toEqual(expected);
       expect(e).toBeNull();
       done();
-    })
+    });
   });
 });
 
@@ -114,7 +114,7 @@ test('crawl[map]: book page', (done) => {
       expect(result).toEqual(expected);
       expect(e).toBeNull();
       done();
-    })
+    });
   });
 });
 
@@ -125,7 +125,7 @@ test('crawl[reduce]', (done) => {
   const expected = {};
   expected[url] = 1;
 
-  const result = crawl['reduce'](url, _count)
+  const result = crawl['reduce'](url, _count);
   expect(result).toEqual(expected);
   done();
 });

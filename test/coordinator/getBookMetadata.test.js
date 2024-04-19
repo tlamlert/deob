@@ -1,11 +1,11 @@
-const { getBookMetadata } = require("../../coordinator/getBookMetadata.js");
+const {getBookMetadata} = require('../../coordinator/getBookMetadata.js');
 
-global.nodeConfig = { ip: "127.0.0.1", port: 7070 };
-const distribution = require("../../distribution");
+global.nodeConfig = {ip: '127.0.0.1', port: 7070};
+const distribution = require('../../distribution');
 // global.distribution = distribution;
 const id = distribution.util.id;
 
-const groupsTemplate = require("../../distribution/all/groups");
+const groupsTemplate = require('../../distribution/all/groups');
 
 const bookMetadataGroup = {};
 
@@ -22,9 +22,9 @@ let localServer = null;
   The local node will be the orchestrator.
 */
 
-const n1 = { ip: "127.0.0.1", port: 7110 };
-const n2 = { ip: "127.0.0.1", port: 7111 };
-const n3 = { ip: "127.0.0.1", port: 7112 };
+const n1 = {ip: '127.0.0.1', port: 7110};
+const n2 = {ip: '127.0.0.1', port: 7111};
+const n3 = {ip: '127.0.0.1', port: 7112};
 
 beforeAll((done) => {
   // Define necessary node groups
@@ -47,13 +47,13 @@ beforeAll((done) => {
   distribution.node.start((server) => {
     localServer = server;
     startNodes(() => {
-      const bookMetadataConfig = { gid: "bookMetadata" };
+      const bookMetadataConfig = {gid: 'bookMetadata'};
       groupsTemplate(bookMetadataConfig).put(
-        bookMetadataConfig,
-        bookMetadataGroup,
-        (e, v) => {
-          done();
-        }
+          bookMetadataConfig,
+          bookMetadataGroup,
+          (e, v) => {
+            done();
+          },
       );
     });
   });
@@ -61,7 +61,7 @@ beforeAll((done) => {
 
 afterAll((done) => {
   // Stop the nodes if they are running
-  let remote = { service: "status", method: "stop" };
+  let remote = {service: 'status', method: 'stop'};
   remote.node = n1;
   distribution.local.comm.send([], remote, (e, v) => {
     remote.node = n2;
@@ -116,11 +116,11 @@ afterAll((done) => {
 //   });
 // });
 
-test("getBookMetadata[map] multiline title", (done) => {
-  const url = "url.com";
+test('getBookMetadata[map] multiline title', (done) => {
+  const url = 'url.com';
   const expected = {};
   expected[url] =
-    "The Mirror of Literature, Amusement, and Instruction Vol. 19. No. 575 - 10 Nov 1832";
+    'The Mirror of Literature, Amusement, and Instruction Vol. 19. No. 575 - 10 Nov 1832';
   const pageContent = `The Project Gutenberg EBook of The Mirror of Literature, Amusement, and
 Instruction, by Various
 
@@ -154,14 +154,14 @@ Proofreaders
       expect(result).toEqual(expected);
       expect(e).toBeNull();
       done();
-    })
+    });
   });
 });
 
-test("getBookMetadata[map] simple title", (done) => {
-  const url2 = "url2.com";
+test('getBookMetadata[map] simple title', (done) => {
+  const url2 = 'url2.com';
   const expected = {};
-  expected[url2] = "U.S. Copyright Renewals, 1961 January - June";
+  expected[url2] = 'U.S. Copyright Renewals, 1961 January - June';
   const pageContent = `The Project Gutenberg eBook of U.S. Copyright Renewals, 1961 January - June
 
   This eBook is for the use of anyone anywhere at no cost and with
@@ -187,10 +187,10 @@ test("getBookMetadata[map] simple title", (done) => {
   });
 });
 
-test("getBookMetadata[map] no title", (done) => {
-  const url = "url.com";
+test('getBookMetadata[map] no title', (done) => {
+  const url = 'url.com';
   const expected = {
-    "url.com": "N/A",
+    'url.com': 'N/A',
   };
   const pageContent = `The Project Gutenberg eBook of U.S. Copyright Renewals, 1961 January - June
   
@@ -210,13 +210,13 @@ test("getBookMetadata[map] no title", (done) => {
   });
 });
 
-test("getBookMetadata[reduce]", (done) => {
+test('getBookMetadata[reduce]', (done) => {
   const expected = {
-    "url.com": "U.S. Copyright Renewals, 1961 January - June",
+    'url.com': 'U.S. Copyright Renewals, 1961 January - June',
   };
-  const result = getBookMetadata["reduce"](
-    "url.com",
-    "U.S. Copyright Renewals, 1961 January - June"
+  const result = getBookMetadata['reduce'](
+      'url.com',
+      'U.S. Copyright Renewals, 1961 January - June',
   );
   expect(result).toEqual(expected);
   done();

@@ -9,7 +9,7 @@ global.nodeConfig = global.nodeConfig || {
   onStart: () => {
     console.log('Node started!');
   },
-  neighbors: [] // List of IP Addr's of other nodes (ports are hardcoded to be the same)
+  neighbors: [], // List of IP Addr's of other nodes (ports are hardcoded to be the same)
 };
 
 /*
@@ -40,7 +40,7 @@ if (args.neighbors) {
   // TODO: args.neighbors is a list of addresses split by a comma
   // just need to split on commas!
   global.nodeConfig.neighbors = args.neighbors;
-  console.log("global.nodeConfig.neighbors", global.nodeConfig.neighbors)
+  console.log('global.nodeConfig.neighbors', global.nodeConfig.neighbors);
 }
 
 const distribution = {

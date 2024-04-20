@@ -15,6 +15,7 @@ const {executeGetURLsWorkflow} = require('../workflow/getURLs.js');
 const {executeGetBookMetadataWorkflow} = require('../workflow/getBookMetadata.js');
 const {executeIndexingWorkflow} = require('../workflow/index.js');
 
+// TODO: for some reason if you enable all of these, the server will crash
 const crawlerWorkflows = [
   {name: 'getURLsWorkflow', exec: executeGetURLsWorkflow},
   // {name: 'getBookMetadataWorkflow', exec: executeGetBookMetadataWorkflow},

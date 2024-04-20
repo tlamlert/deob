@@ -26,10 +26,13 @@ getURLs['map'] = (url, _) => {
       });
       res.on('end', () => {
         // convert the given url to a directory
-        if (!url.endsWith('.html') && !url.endsWith('/')) {
-          url += '/';
+        // TODO: This is hard-coded
+        let base;
+        if (!url.endsWith('.txt') && !url.endsWith('/')) {
+          base = new global.URL(url + '/');
+        } else {
+          base = new global.URL(url);
         }
-        const base = new global.URL(url);
 
         // init dom object
         const dom = new global.JSDOM(pageContent);
@@ -42,7 +45,8 @@ getURLs['map'] = (url, _) => {
           o[new global.URL(link, base).href] = 1;
           out.push(o);
         });
-        resolve(out);
+
+        global.distribution.crawledURLs.store.put(url, url, ()=>{resolve(out);});
       });
     });
   });

@@ -10,22 +10,64 @@ function search(query) {
   // Get the query from the URL
   const q = query.q;
   const ngrams = utils.preprocess(q);
-  const testNgram = ngrams[0];
+  // const testNgram = ngrams[0];
   console.log('testNgram: ', testNgram);
 
   return new Promise((resolve, reject) => {
-    global.distribution.invertedMetadata.store.get(testNgram, (err, val) => {
-      if (err) {
-        resolve(err);
-      } else {
-        // res: [(url, count), ...]
-        // Sort by count
-        val.sort((a, b) => b[1] - a[1]);
-        // Get the top 10 urls
-        const urls = val.slice(0, 10).map((url) => url[0]);
-        resolve(urls);
-      }
-    });
+    let numNgramsProcessed = 0;
+    let finalUrlsMap = new Map();
+    for (const ngram of ngrams) {
+      global.distribution.invertedMetadata.store.get(ngram, (err, val) => {
+        if (err) {
+          resolve(err);
+        } else {
+          // Update continuation thing
+          numNgramsProcessed++;
+          
+          // Update finalUrlsMap (val = [[url, count], ...])
+          for (const urlCount of val) {
+            const key = urlCount[0];
+            const count = urlCount[1];
+            if (finalUrlsMap.has(key)) {
+              finalUrlsMap.set(key, finalUrlsMap.get(key)+count)
+            } else {
+              finalUrlsMap.set(key, count)
+            }
+          }
+
+          // Finished processing all ngrams; create final url list
+          if (numNgramsProcessed === ngrams.length) {
+            let finalUrls = [];
+            for (const [url, count] of finalUrlsMap) {
+              finalUrls.push([url, count]);
+            }
+            
+            // Sort finalUrls count
+            finalUrls.sort((a, b) => b[1] - a[1]);
+        
+            // Get the top 10 urls
+            const urls = finalUrls.slice(0, 10).map((url) => url[0]);
+            resolve(urls);
+          }
+        }
+      });
+    }
+    
+
+    // console.log('search query: ', query);
+    // global.distribution.invertedMetadata.store.get(testNgram, (err, val) => {
+    //   console.log('err: ', err);
+    //   if (err) {
+    //     resolve(err);
+    //   } else {
+    //     // res: [(url, count), ...]
+    //     // Sort by count
+    //     val.sort((a, b) => b[1] - a[1]);
+    //     // Get the top 10 urls
+    //     const urls = val.slice(0, 10).map((url) => url[0]);
+    //     resolve(urls);
+    //   }
+    // });
   });
 }
 

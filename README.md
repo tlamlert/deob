@@ -39,8 +39,17 @@ sudo apt install npm
 
 ### Testing locally
 shell1 (worker): `node distribution.js --port 8081`
-shell2 (coordinator): `node ./coordinator/server.js --workers 127.0.0.1 --workerPort 8081`
+shell2 (coordinator): `node ./coordinator/server.js --workers 127.0.0.1 --workerPorts 8081`
 shell3 (client): `curl -X PUT -d "" 127.0.0.1:8080/start`
+query: `curl -X GET -d "" "127.0.0.1:8080/search?q=constitution“` 
+<!-- note that you need to stick it through some url converter thing if you want to input multiple strings -->
+
+### Testing locally (Multiple workers)
+shell1 (worker): `node distribution.js --port 8081`
+shell2 (coordinator): `node ./coordinator/server.js --workers 127.0.0.1,127.0.0.1,127.0.0.1 --workerPorts 8081,8082,8083`
+shell3 (client): `curl -X PUT -d "" 127.0.0.1:8080/start`
+**Note** If all workers share the same port, pass in the port number in `--workerPorts` as one single value ex.
+shell2 (coordinator): `node ./coordinator/server.js --workers <ip_addr_1>,<ip_addr_2>,<ip_addr_3> --workerPorts 8080`
 
 ### Manually Sending a Request to a Node (manual `comm.send`)
 1. Start the node server and expose it to the public internet by running `node distribution.js --ip "0.0.0.0"`
@@ -58,7 +67,6 @@ node distribution.js --ip '127.0.0.1' --neighbors <ip_address_1>,<ip_address_2>,
 const yargs = require('yargs/yargs');
 yargs('node distribution.js --neighbors 0.0.0.0,1.1.1.1').parse();
 ```
-
 ```shell
 # https://stackoverflow.com/questions/38679346/get-public-ip-address-on-current-ec2-instance
 # IP addresses under this account?

@@ -46,6 +46,10 @@ index['map'] = (url, bookMetadata) => {
  */
 index['reduce'] = (ngram, urls) => {
   return new Promise((resolve) => {
+    global.utils.statsLog(
+      `${ngram},${urls}`,
+      `data/stats/ngram.csv`
+    );
     // Get existing [(url,count), ...] object if it exists
     global.distribution.invertedMetadata.store.get(ngram, (e, oldURLs) => {
       const urlToCount = {};
@@ -82,6 +86,7 @@ index['reduce'] = (ngram, urls) => {
           console.error(e);
         }
 
+
         // Return as { ngram : [ [url, count], ... ] } (needed to conform to existing API)
         const out = {};
         out[ngram] = res;
@@ -104,7 +109,6 @@ function executeIndexingWorkflow(config) {
         return;
       }
 
-      // TODO: wouldn't this just process the first 100 keys over and over?
       // Workflow configuration
       const workflowConfig = {
         keys: metadatas.splice(0, config.MAX_KEYS_PER_EXECUTION),
@@ -125,7 +129,20 @@ function executeIndexingWorkflow(config) {
           console.error('Indexing workflow error: ' + err);
           reject(err);
         } else {
-          resolve(workflowConfig.keys.length);
+          // WRONG: Delete processed metadatas
+          // resolve(workflowConfig.keys.length);
+
+          // CORRECT: Delete processed metadatas
+          const processedMetadatas = metadatas.map(Object.keys).flat();
+          let numDeleted = 0;
+          processedMetadatas.forEach((metadata) => {
+            global.distribution.bookMetadata.store.del(metadata, () => {
+              numDeleted++;
+              if (numDeleted === processedMetadatas.length) {
+                resolve(workflowConfig.keys.length);
+              }
+            });
+          });
         }
       });
     });

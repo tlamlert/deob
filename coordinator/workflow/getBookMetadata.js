@@ -88,10 +88,22 @@ function executeGetBookMetadataWorkflow(config) {
           reject(err);
         }
   
-        // Remove parsed URLs from uncrawledBookURLs
-        const crawledBookURLs = bookMetadata.map(Object.keys).flat();
+        // WRONG: Remove parsed URLs from uncrawledBookURLs
+        // const crawledBookURLs = bookMetadata.map(Object.keys).flat();
+        // crawledBookURLs.forEach((url) => {
+        //   global.distribution.uncrawledBookURLs.store.del(url, () => { resolve(crawledBookURLs.length) });
+        // });
+
+        
+        // CORRECT: Remove parsed URLs from uncrawledBookURLs
+        let numDeleted = 0;
         crawledBookURLs.forEach((url) => {
-          global.distribution.uncrawledBookURLs.store.del(url, () => { resolve(crawledBookURLs.length) });
+          global.distribution.uncrawledBookURLs.store.del(url, () => { 
+            numDeleted++;
+            if (numDeleted === crawledBookURLs.length) {
+              resolve(crawledBookURLs.length) 
+            }
+          });
         });
       });
     });

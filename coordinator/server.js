@@ -31,7 +31,7 @@ const serverConfig = {
   ip: '127.0.0.1',
   port: 8080,
   workers: [],
-  workPort: 8081,
+  workerPorts: 8081,
   // List of IP Addr's of workers in the cloud distributed system
   // (ports are hardcoded to be the same)
   // workers can also be a list of local workers
@@ -54,8 +54,15 @@ function readServerConfiguration() {
     serverConfig.workers = args.workers.split(',');
   }
 
-  if (args.workerPort) {
-    serverConfig.workerPort = args.workerPort;
+  if (args.workerPorts) {
+    if (typeof(args.workerPorts) === 'string') {
+      serverConfig.workerPorts = args.workerPorts.split(',').map(eval);
+      if (serverConfig.workers.length != serverConfig.workerPorts.length) {
+        return new Error('the number of ports is not equal to the number of workers');
+      }
+    } else {
+      serverConfig.workerPorts = Array(serverConfig.workers.length).fill(args.workerPorts);
+    }
   }
 }
 
@@ -63,14 +70,15 @@ function readServerConfiguration() {
 //          Initialize groups
 // =======================================
 
-const createWorkerAndStorageGroups = function(workers, workerPort) {
+const createWorkerAndStorageGroups = function(workers, workerPorts) {
   // Create node group with the given GID
   const createGenericGroup = function(gidString) {
     const genericGroup = {};
-    for (const ipAddr of workers) {
-      const neighbor = {ip: ipAddr, port: workerPort};
+    console.log(workerPorts);
+    workers.forEach((ipAddr, i) => {
+      const neighbor = {ip: ipAddr, port: workerPorts[i]};
       genericGroup[id.getSID(neighbor)] = neighbor;
-    }
+    })
     const config = {gid: gidString};
 
     return new Promise((resolve) => {
@@ -84,6 +92,8 @@ const createWorkerAndStorageGroups = function(workers, workerPort) {
       });
     });
   };
+
+  // TODO: Before creating 
 
   return Promise.all([
     // uncrawledPageURLs : Responsible for storing uncrawled page URLs
@@ -113,6 +123,7 @@ const createWorkerAndStorageGroups = function(workers, workerPort) {
 
 const {startWorkflow, stopWorkflow, workflowStats} = require('./endpoint/workflow.js');
 const {search} = require('./endpoint/search.js');
+const { number } = require('yargs');
 
 const startServer = function(serverConfig, cb = () => { }) {
   // Register functions as endpoints. Only synchronous functions
@@ -141,7 +152,7 @@ const startServer = function(serverConfig, cb = () => { }) {
   });
 
   // Create worker and storage groups.
-  createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPort).then(() => {
+  createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPorts).then(() => {
     console.log('all groups are created');
     // Init uncrawled database
     const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
@@ -160,7 +171,10 @@ const startServer = function(serverConfig, cb = () => { }) {
 /* The following code is run when server.js is run directly */
 if (require.main === module) {
   // Read server configuration from command line
-  readServerConfiguration();
+  const err = readServerConfiguration();
+  if (err) {
+    console.err(err);
+  }
 
   // Http server providing user interface
   startServer(serverConfig);

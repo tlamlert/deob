@@ -136,9 +136,20 @@ function executeGetURLsWorkflow(config) {
           reject(err);
         }
 
-        // Remove parsed URLs from uncrawledBookURLs
+        // WRONG: Remove parsed URLs from uncrawledBookURLs
+        // pageURLsToCrawl.forEach((url) => {
+        //   global.distribution.uncrawledPageURLs.store.del(url, () => { resolve(pageURLsToCrawl.length) });
+        // });
+
+        // CORRECT: Remove parsed URLs from uncrawledBookURLs
+        let numDeleted = 0;
         pageURLsToCrawl.forEach((url) => {
-          global.distribution.uncrawledPageURLs.store.del(url, () => { resolve(pageURLsToCrawl.length) });
+          global.distribution.uncrawledPageURLs.store.del(url, () => {
+            numDeleted++;
+            if (numDeleted === pageURLsToCrawl.length) {
+              resolve(pageURLsToCrawl.length);
+            }
+          });
         });
       });
     });

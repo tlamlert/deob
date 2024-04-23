@@ -1,6 +1,6 @@
-const { performance } = require('perf_hooks');
-const fs = require('fs');
-const path = require('path');
+const { performance } = require("perf_hooks");
+const fs = require("fs");
+const path = require("path");
 
 // =======================================
 //          Workflow configuration
@@ -11,13 +11,15 @@ const defaultConfig = {
   MAX_KEYS_PER_EXECUTION: 1, // number of keys
 };
 
-const {executeGetURLsWorkflow} = require('../workflow/getURLs.js');
-const {executeGetBookMetadataWorkflow} = require('../workflow/getBookMetadata.js');
-const {executeIndexingWorkflow} = require('../workflow/index.js');
+const { executeGetURLsWorkflow } = require("../workflow/getURLs.js");
+const {
+  executeGetBookMetadataWorkflow,
+} = require("../workflow/getBookMetadata.js");
+const { executeIndexingWorkflow } = require("../workflow/index.js");
 
 // TODO: for some reason if you enable all of these, the server will crash
 const crawlerWorkflows = [
-  {name: 'getURLsWorkflow', exec: executeGetURLsWorkflow},
+  { name: "getURLsWorkflow", exec: executeGetURLsWorkflow },
   // {name: 'getBookMetadataWorkflow', exec: executeGetBookMetadataWorkflow},
   // {name: 'indexWorkflow', exec: executeIndexingWorkflow},
 ];
@@ -31,7 +33,7 @@ const jobIDs = [];
 
 function startWorkflow() {
   if (jobIDs.length > 0) {
-    return 'Crawler workflows are currently running';
+    return "Crawler workflows are currently running";
   }
 
   crawlerWorkflows.forEach((workflow) => {
@@ -55,8 +57,10 @@ function startWorkflow() {
           // each workflow execution function can return self-defined stats objects
           isRunning = false;
           const executionTime = performance.now() - startTime;
-          // TODO: Should not use errorLog
-          global.utils.errorLog(`${startTime},${executionTime},${numKeysProcessed}`, `data/stats/${workflow.name}.csv`);
+          global.utils.statsLog(
+            `${startTime},${executionTime},${numKeysProcessed}`,
+            `data/stats/${workflow.name}.csv`
+          );
         },
         (err) => {
           // TODO: Better error handling than just printing it out??
@@ -64,17 +68,16 @@ function startWorkflow() {
           global.utils.errorLog(err, `data/error/${workflow.name}.txt`);
         }
       );
-      
     }, defaultConfig.TIME_BETWEEN_JOBS);
     jobIDs.push(jobID);
   });
-  return 'Crawler workflows have been started';
+  return "Crawler workflows have been started";
 }
 
 function stopWorkflow() {
   jobIDs.forEach(clearInterval);
   jobIDs.length = 0;
-  return 'Crawler workflows have been stopped';
+  return "Crawler workflows have been stopped";
 }
 
 function workflowStats() {
@@ -82,32 +85,41 @@ function workflowStats() {
   const createStatView = function (workflowName) {
     let totalNumberInvocations = null;
     let totalExecutionTime = null;
-    let totalNumberKeysProcessed =  null;
+    let totalNumberKeysProcessed = null;
     let averageExecutionTime = null;
-    let averageNumberKeysProcessed =  null;
+    let averageNumberKeysProcessed = null;
     let numberErrors = null;
 
     // Gather workflow statistics from `data/error/...`
     const datapath = path.join(__dirname, `../data/stats/${workflowName}.csv`);
     if (fs.existsSync(datapath)) {
       const data = fs.readFileSync(datapath);
-      const rows = data.toString('utf8').split('\n').map((str) => str.split(',')).filter((row) => row.length == 3);
-  
+      const rows = data
+        .toString("utf8")
+        .split("\n")
+        .map((str) => str.split(","))
+        .filter((row) => row.length == 3);
+
       // Compute total statistics
       totalNumberInvocations = rows.length;
-      totalExecutionTime = rows.map((row) => parseFloat(row[1])).reduce((a, b) => a + b, 0);
-      totalNumberKeysProcessed = rows.map((row) => parseFloat(row[2])).reduce((a, b) => a + b, 0);
-  
+      totalExecutionTime = rows
+        .map((row) => parseFloat(row[1]))
+        .reduce((a, b) => a + b, 0);
+      totalNumberKeysProcessed = rows
+        .map((row) => parseFloat(row[2]))
+        .reduce((a, b) => a + b, 0);
+
       // Compute average statistics
       averageExecutionTime = totalExecutionTime / totalNumberInvocations;
-      averageNumberKeysProcessed = totalNumberKeysProcessed / totalNumberInvocations;
+      averageNumberKeysProcessed =
+        totalNumberKeysProcessed / totalNumberInvocations;
     }
 
     // Gather workflow statistics from `data/stats/...`
     const errorpath = path.join(__dirname, `../data/error/${workflowName}.txt`);
     if (fs.existsSync(errorpath)) {
-      const error = fs.toString('utf8').readFileSync(errorpath);
-      numberErrors = error.split('\n').length;
+      const error = fs.toString("utf8").readFileSync(errorpath);
+      numberErrors = error.split("\n").length;
     }
 
     return {
@@ -122,7 +134,9 @@ function workflowStats() {
 
   // Create stat view for each workflow in the pipeline
   const statView = {};
-  crawlerWorkflows.forEach((workflow) => { statView[workflow.name] = createStatView(workflow.name)});
+  crawlerWorkflows.forEach((workflow) => {
+    statView[workflow.name] = createStatView(workflow.name);
+  });
   return statView;
 }
 

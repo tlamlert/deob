@@ -10,8 +10,6 @@ function search(query) {
   // Get the query from the URL
   const q = query.q;
   const ngrams = utils.preprocess(q);
-  // const testNgram = ngrams[0];
-  console.log('testNgram: ', testNgram);
 
   return new Promise((resolve, reject) => {
     let numNgramsProcessed = 0;

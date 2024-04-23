@@ -129,10 +129,7 @@ function executeIndexingWorkflow(config) {
           console.error('Indexing workflow error: ' + err);
           reject(err);
         } else {
-          // WRONG: Delete processed metadatas
-          // resolve(workflowConfig.keys.length);
-
-          // CORRECT: Delete processed metadatas
+          // Delete processed metadatas
           const processedMetadatas = metadatas.map(Object.keys).flat();
           let numDeleted = 0;
           processedMetadatas.forEach((metadata) => {

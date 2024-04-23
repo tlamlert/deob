@@ -136,12 +136,7 @@ function executeGetURLsWorkflow(config) {
           reject(err);
         }
 
-        // WRONG: Remove parsed URLs from uncrawledBookURLs
-        // pageURLsToCrawl.forEach((url) => {
-        //   global.distribution.uncrawledPageURLs.store.del(url, () => { resolve(pageURLsToCrawl.length) });
-        // });
-
-        // CORRECT: Remove parsed URLs from uncrawledBookURLs
+        // Remove parsed URLs from uncrawledBookURLs
         let numDeleted = 0;
         pageURLsToCrawl.forEach((url) => {
           global.distribution.uncrawledPageURLs.store.del(url, () => {

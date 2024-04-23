@@ -87,15 +87,9 @@ function executeGetBookMetadataWorkflow(config) {
         if (err && Object.keys(err).length > 0) {
           reject(err);
         }
-  
-        // WRONG: Remove parsed URLs from uncrawledBookURLs
-        // const crawledBookURLs = bookMetadata.map(Object.keys).flat();
-        // crawledBookURLs.forEach((url) => {
-        //   global.distribution.uncrawledBookURLs.store.del(url, () => { resolve(crawledBookURLs.length) });
-        // });
-
         
-        // CORRECT: Remove parsed URLs from uncrawledBookURLs
+        // Remove parsed URLs from uncrawledBookURLs
+        const crawledBookURLs = bookMetadata.map(Object.keys).flat();
         let numDeleted = 0;
         crawledBookURLs.forEach((url) => {
           global.distribution.uncrawledBookURLs.store.del(url, () => { 

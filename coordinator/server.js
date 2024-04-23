@@ -23,7 +23,7 @@ global.utils = utils;
 //          Read config from CLI
 // =======================================
 
-// Usage: ./distribution.js --ip '127.0.0.1' --port 1234 --workers 0.0.0.0,1.1.1.1
+// Usage: ./distribution.js --ip 127.0.0.1 --port 1234 --workers 0.0.0.0,1.1.1.1 --workerPort 8080
 const args = require('yargs').argv;
 
 // Default configuration
@@ -31,6 +31,7 @@ const serverConfig = {
   ip: '127.0.0.1',
   port: 8080,
   workers: [],
+  workPort: 8081,
   // List of IP Addr's of workers in the cloud distributed system
   // (ports are hardcoded to be the same)
   // workers can also be a list of local workers
@@ -63,7 +64,7 @@ function readServerConfiguration() {
 // =======================================
 
 const createWorkerAndStorageGroups = function(workers, workerPort) {
-// Create node group with the given GID
+  // Create node group with the given GID
   const createGenericGroup = function(gidString) {
     const genericGroup = {};
     for (const ipAddr of workers) {
@@ -85,23 +86,23 @@ const createWorkerAndStorageGroups = function(workers, workerPort) {
   };
 
   return Promise.all([
-    // uncralwedPageURLs : Responsible for storing the uncrawled page URLs
-    // (url, null)
+    // uncrawledPageURLs : Responsible for storing uncrawled page URLs
+    // (url, url)
     createGenericGroup('uncrawledPageURLs'),
 
-    // uncralwedBookURLs : Responsible for storing the uncrawled book URLs
-    // (url, null)
+    // uncrawledBookURLs : Responsible for storing uncrawled book URLs
+    // (url, url)
     createGenericGroup('uncrawledBookURLs'),
 
-    // crawledUrls : Responsible for storing the URLs we already visited
-    // (url, null)
-    createGenericGroup('crawledURLs'),
+    // crawledPageURLs : Responsible for storing visited page URLs
+    // (url, url)
+    createGenericGroup('crawledPageURLs'),
 
-    // bookMetadata : Responsible for stroing the metadata of crawled books
+    // bookMetadata : Responsible for storing book metadata
     // (url, metadata)
     createGenericGroup('bookMetadata'),
 
-    // invertedBookTitles : Responsible for storing the mapping from ngram to list of URLs
+    // invertedMetadata : Responsible for storing the mapping from ngram to list of URLs
     // (ngram, [(url, count), ...])
     createGenericGroup('invertedMetadata')]);
 };

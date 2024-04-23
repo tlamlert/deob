@@ -37,10 +37,7 @@ if (args.config) {
 }
 
 if (args.neighbors) {
-  // TODO: args.neighbors is a list of addresses split by a comma
-  // just need to split on commas!
-  global.nodeConfig.neighbors = args.neighbors;
-  console.log('global.nodeConfig.neighbors', global.nodeConfig.neighbors);
+  global.nodeConfig.neighbors = args.workers.split(',');
 }
 
 const distribution = {

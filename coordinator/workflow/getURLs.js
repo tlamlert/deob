@@ -46,7 +46,7 @@ getURLs['map'] = (url, _) => {
           out.push(o);
         });
 
-        global.distribution.crawledURLs.store.put(url, url, ()=>{resolve(out);});
+        global.distribution.crawledPageURLs.store.put(url, url, ()=>{resolve(out);});
       });
     });
   });
@@ -63,7 +63,7 @@ getURLs['reduce'] = (url, _count) => {
       crawledDatabase = global.distribution.bookMetadata;
     } else {
       uncrawledDatabase = global.distribution.uncrawledPageURLs;
-      crawledDatabase = global.distribution.crawledURLs;
+      crawledDatabase = global.distribution.crawledPageURLs;
     }
 
     // Filter out invalid links
@@ -111,7 +111,7 @@ getURLs['reduce'] = (url, _count) => {
 // =======================================
 
 function executeGetURLsWorkflow(config) {
-  // Get all crawled URLs from `crawledURLs`
+  // Get all crawled URLs from `crawledPageURLs`
   // Note: This assumes that Crawl was run before such that there exists
   // relevant data on the worker nodes
   return new Promise((resolve, reject) => {

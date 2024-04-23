@@ -65,7 +65,7 @@ getBookMetadata['reduce'] = (key, values) => {
 // =======================================
 
 function executeGetBookMetadataWorkflow(config) {
-  // Get all crawled URLs from `crawledURLs`
+  // Get all crawled URLs from `crawledPageURLs`
   // Note: This assumes that Crawl was run before such that there exists
   // relevant data on the worker nodes
   return new Promise((resolve, reject) => {

@@ -8,8 +8,8 @@ const {getURLs} = require('../../coordinator/getURLs.js');
 
 // QUESTION: should we change GIDs to `test-${gid}`?
 const rpcGroup = {}; // rawPageContents
-const cURLsGroup = {}; // crawledURLs
-const uURLsGroup = {}; // uncrawledURLs
+const cURLsGroup = {}; // crawledPageURLs
+const uURLsGroup = {}; // uncrawledPageURLs
 
 const fs = require('fs');
 
@@ -75,10 +75,10 @@ beforeAll((done) => {
       const rpcConfig = {gid: 'rawPageContents'};
       groupsTemplate(rpcConfig).put(rpcConfig, rpcGroup, (e, v) => {
         console.log('Raw Page Contents Group Initialized');
-        const cURLsConfig = {gid: 'crawledURLs'};
+        const cURLsConfig = {gid: 'crawledPageURLs'};
         groupsTemplate(cURLsConfig).put(cURLsConfig, cURLsGroup, (e, v) => {
           console.log('Crawled URLs Group Initialized');
-          const uURLsConfig = {gid: 'uncrawledURLs'};
+          const uURLsConfig = {gid: 'uncrawledPageURLs'};
           groupsTemplate(uURLsConfig).put(uURLsConfig, uURLsGroup, (e, v) => {
             console.log('Uncrawled URLs Group Initialized');
             done();

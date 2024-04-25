@@ -135,10 +135,10 @@ const startServer = function (serverConfig, cb = () => { }) {
   // Register functions as endpoints. Only synchronous functions
   // or functions that return a Promise can be registered.
   const endpoints = { PUT: {}, GET: {} };
-  // endpoints.PUT['/start'] = startWorkflow;
-  // endpoints.PUT['/stop'] = stopWorkflow;
-  // endpoints.GET['/search'] = search;
-  // endpoints.GET['/stats'] = workflowStats;
+  endpoints.PUT['/start'] = startWorkflow;
+  endpoints.PUT['/stop'] = stopWorkflow;
+  endpoints.GET['/search'] = search;
+  endpoints.GET['/stats'] = workflowStats;
   endpoints.GET['/'] = () => 'Welcome to the Distributed Search Engine!\n';
 
   // Create a HTTPs server.
@@ -158,21 +158,25 @@ const startServer = function (serverConfig, cb = () => { }) {
     }
   });
 
-  // Create worker and storage groups.
-  createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPorts).then(() => {
-    console.log('all groups are created');
-    // Init uncrawled database
-    const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
-    const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
-    global.distribution.uncrawledPageURLs.store.put(pageUrl, pageUrl, () => {
-      global.distribution.uncrawledBookURLs.store.put(bookUrl, bookUrl, () => {
-        server.listen(serverConfig.port, serverConfig.ip, () => {
-          console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
-          cb(server);
-        });
-      });
-    });
+  server.listen(serverConfig.port, serverConfig.ip, () => {
+    console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
+    cb(server);
   });
+  // Create worker and storage groups.
+  // createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPorts).then(() => {
+  //   console.log('all groups are created');
+  //   // Init uncrawled database
+  //   const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
+  //   const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
+  //   global.distribution.uncrawledPageURLs.store.put(pageUrl, pageUrl, () => {
+  //     global.distribution.uncrawledBookURLs.store.put(bookUrl, bookUrl, () => {
+  //       server.listen(serverConfig.port, serverConfig.ip, () => {
+  //         console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
+  //         cb(server);
+  //       });
+  //     });
+  //   });
+  // });
 };
 
 /* The following code is run when server.js is run directly */

@@ -78,13 +78,13 @@ const createWorkerAndStorageGroups = function (workers, workerPorts) {
     const genericGroup = {};
 
     workers.forEach((ipAddr, i) => {
-      console.log('ipAddr: ', ipAddr);
       const neighbor = { ip: ipAddr, port: workerPorts[i] };
       genericGroup[id.getSID(neighbor)] = neighbor;
     })
     const config = { gid: gidString };
 
     return new Promise((resolve) => {
+      console.log('Creating group: ', gidString);
       groupsTemplate(config).put(config, genericGroup, (err, value) => {
         if (Object.keys(err).length > 0) {
           console.error('err: ', err);

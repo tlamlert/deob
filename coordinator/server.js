@@ -135,10 +135,10 @@ const startServer = function (serverConfig, cb = () => { }) {
   // Register functions as endpoints. Only synchronous functions
   // or functions that return a Promise can be registered.
   const endpoints = { PUT: {}, GET: {} };
-  endpoints.PUT['/start'] = startWorkflow;
-  endpoints.PUT['/stop'] = stopWorkflow;
-  endpoints.GET['/search'] = search;
-  endpoints.GET['/stats'] = workflowStats;
+  // endpoints.PUT['/start'] = startWorkflow;
+  // endpoints.PUT['/stop'] = stopWorkflow;
+  // endpoints.GET['/search'] = search;
+  // endpoints.GET['/stats'] = workflowStats;
   endpoints.GET['/'] = () => 'Welcome to the Distributed Search Engine!\n';
 
   // Create a HTTPs server.

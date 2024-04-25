@@ -55,7 +55,7 @@ shell2 (coordinator): `node ./coordinator/server.js --workers <ip_addr_1>,<ip_ad
 1. Start the node server and expose it to the public internet by running `node distribution.js --ip "0.0.0.0"`
 2. Send a request to the node server (from a remote machine in the same network) by running the following command:
     ```shell
-    curl -X PUT http://<public-ip-address>:<port>/status/get -H "Content-Type: application/json" -d '{}'
+    curl -X PUT http://<public-ip-address>:<port>/status/get -H "Content-Type: application/json" -d '{"type":"array","value":{"0":"{\"type\":\"string\",\"value\":\"sid\"}"}}'
     ```
 
 ```shell

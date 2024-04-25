@@ -4,7 +4,7 @@
 
 const http = require('http');
 const URL = require('url');
-const {JSDOM} = require('jsdom');
+const { JSDOM } = require('jsdom');
 global.URL = URL;
 global.JSDOM = JSDOM;
 
@@ -55,7 +55,7 @@ function readServerConfiguration() {
   }
 
   if (args.workerPorts) {
-    if (typeof(args.workerPorts) === 'string') {
+    if (typeof (args.workerPorts) === 'string') {
       serverConfig.workerPorts = args.workerPorts.split(',').map(eval);
       if (serverConfig.workers.length != serverConfig.workerPorts.length) {
         return new Error('the number of ports is not equal to the number of workers');
@@ -70,16 +70,19 @@ function readServerConfiguration() {
 //          Initialize groups
 // =======================================
 
-const createWorkerAndStorageGroups = function(workers, workerPorts) {
+const createWorkerAndStorageGroups = function (workers, workerPorts) {
+  console.log('workers: ', workers);
+
   // Create node group with the given GID
-  const createGenericGroup = function(gidString) {
+  const createGenericGroup = function (gidString) {
     const genericGroup = {};
-    console.log('workers: ', workers);
+
     workers.forEach((ipAddr, i) => {
-      const neighbor = {ip: ipAddr, port: workerPorts[i]};
+      console.log('ipAddr: ', ipAddr);
+      const neighbor = { ip: ipAddr, port: workerPorts[i] };
       genericGroup[id.getSID(neighbor)] = neighbor;
     })
-    const config = {gid: gidString};
+    const config = { gid: gidString };
 
     return new Promise((resolve) => {
       groupsTemplate(config).put(config, genericGroup, (err, value) => {
@@ -121,15 +124,15 @@ const createWorkerAndStorageGroups = function(workers, workerPorts) {
 //          Start HTTP Server
 // =======================================
 
-const {startWorkflow, stopWorkflow, workflowStats} = require('./endpoint/workflow.js');
-const {search} = require('./endpoint/search.js');
+const { startWorkflow, stopWorkflow, workflowStats } = require('./endpoint/workflow.js');
+const { search } = require('./endpoint/search.js');
 const { number } = require('yargs');
 
-const startServer = function(serverConfig, cb = () => { }) {
+const startServer = function (serverConfig, cb = () => { }) {
   console.log(`Starting server on ${serverConfig.ip}:${serverConfig.port}`);
   // Register functions as endpoints. Only synchronous functions
   // or functions that return a Promise can be registered.
-  const endpoints = {PUT: {}, GET: {}};
+  const endpoints = { PUT: {}, GET: {} };
   endpoints.PUT['/start'] = startWorkflow;
   endpoints.PUT['/stop'] = stopWorkflow;
   endpoints.GET['/search'] = search;

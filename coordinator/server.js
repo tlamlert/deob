@@ -158,25 +158,21 @@ const startServer = function (serverConfig, cb = () => { }) {
     }
   });
 
-  server.listen(serverConfig.port, serverConfig.ip, () => {
-    console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
-    cb(server);
-  });
   // Create worker and storage groups.
-  // createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPorts).then(() => {
-  //   console.log('all groups are created');
-  //   // Init uncrawled database
-  //   const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
-  //   const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
-  //   global.distribution.uncrawledPageURLs.store.put(pageUrl, pageUrl, () => {
-  //     global.distribution.uncrawledBookURLs.store.put(bookUrl, bookUrl, () => {
-  //       server.listen(serverConfig.port, serverConfig.ip, () => {
-  //         console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
-  //         cb(server);
-  //       });
-  //     });
-  //   });
-  // });
+  createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPorts).then(() => {
+    console.log('all groups are created');
+    // Init uncrawled database
+    const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
+    const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
+    global.distribution.uncrawledPageURLs.store.put(pageUrl, pageUrl, () => {
+      global.distribution.uncrawledBookURLs.store.put(bookUrl, bookUrl, () => {
+        server.listen(serverConfig.port, serverConfig.ip, () => {
+          console.log(`Engine listening on ${serverConfig.ip}:${serverConfig.port}`);
+          cb(server);
+        });
+      });
+    });
+  });
 };
 
 /* The following code is run when server.js is run directly */

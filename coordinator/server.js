@@ -74,7 +74,7 @@ const createWorkerAndStorageGroups = function(workers, workerPorts) {
   // Create node group with the given GID
   const createGenericGroup = function(gidString) {
     const genericGroup = {};
-    console.log(workerPorts);
+    console.log('workers: ', workers);
     workers.forEach((ipAddr, i) => {
       const neighbor = {ip: ipAddr, port: workerPorts[i]};
       genericGroup[id.getSID(neighbor)] = neighbor;

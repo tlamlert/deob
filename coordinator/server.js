@@ -126,6 +126,7 @@ const {search} = require('./endpoint/search.js');
 const { number } = require('yargs');
 
 const startServer = function(serverConfig, cb = () => { }) {
+  console.log(`Starting server on ${serverConfig.ip}:${serverConfig.port}`);
   // Register functions as endpoints. Only synchronous functions
   // or functions that return a Promise can be registered.
   const endpoints = {PUT: {}, GET: {}};

@@ -86,6 +86,8 @@ const createWorkerAndStorageGroups = function (workers, workerPorts) {
     return new Promise((resolve) => {
       console.log('Creating group: ', gidString);
       groupsTemplate(config).put(config, genericGroup, (err, value) => {
+        console.log('err: ', err);
+        console.log('value: ', value);
         if (Object.keys(err).length > 0) {
           console.error('err: ', err);
         } else {

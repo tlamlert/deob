@@ -72,7 +72,7 @@ function readServerConfiguration() {
 
 const createWorkerAndStorageGroups = function (workers, workerPorts) {
   console.log('workers: ', workers);
-
+  console.log('workerPorts: ', workerPorts);
   // Create node group with the given GID
   const createGenericGroup = function (gidString) {
     const genericGroup = {};

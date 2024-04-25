@@ -133,6 +133,7 @@ const startServer = function(serverConfig, cb = () => { }) {
   endpoints.PUT['/stop'] = stopWorkflow;
   endpoints.GET['/search'] = search;
   endpoints.GET['/stats'] = workflowStats;
+  endpoints.GET['/'] = () => 'Welcome to the Distributed Search Engine!\n';
 
   // Create a HTTPs server.
   const server = http.createServer((req, res) => {

@@ -20,7 +20,7 @@ const getBookMetadata = {};
  */
 getBookMetadata['map'] = (url, _) => {
   return new Promise((resolve, reject) => {
-    // TODO: what if this takes forever: :::R(ER)
+    // TODO: execution time might vary
     global.https.get(url, {rejectUnauthorized: false}, (res) => {
       // Concatenate all data chunk into page content
       let pageContent = '';
@@ -46,39 +46,19 @@ getBookMetadata['map'] = (url, _) => {
           out[url] = null;
           resolve(out);
         }
-        return;
-
-        // Get regex match
-        // const regex = /Title:(.*?)(?=Author:)/s;
-        // const match = regex.exec(pageContent);
-
-        // let out = {};
-        if (match) {
-          // Make the title on one line
-          let titleText = match[1].trim();
-          titleText = titleText.replace(/[\n\t]/g, ' ');
-          titleText = titleText.replace(/\s+/g, ' ');
-          out[url] = titleText;
-          // Only store if regex match can be found
-          console.log(`[Metadata] ${titleText}, ${url}`);
-          global.distribution.bookMetadata.store.put(titleText, url, (e, v) => {
-            resolve(out);
-          });
-        } else {
-          // If we can't find the regex, ignore this file
-          out[url] = 'N/A';
-          resolve(out);
-        }
       });
     });
   });
 };
 
+/**
+ * Do nothing.
+ * Output: (url, metadata)
+ * @param {*} key 
+ * @param {*} values 
+ * @returns 
+ */
 getBookMetadata['reduce'] = (key, values) => {
-  /**
-   * Do nothing.
-   * Output: (url, metadata)
-   */
   let out = {};
   out[key] = values;
   return out;
@@ -96,6 +76,7 @@ function executeGetBookMetadataWorkflow(config) {
     global.distribution.uncrawledBookURLs.store.get(null, (err, uncralwedBookURLs) => {
       if (err && Object.keys(err).length > 0) {
         reject(err);
+        return;
       };
 
       // Define the workflow configuration
@@ -105,6 +86,10 @@ function executeGetBookMetadataWorkflow(config) {
         reduce: getBookMetadata['reduce'],
         memory: true,
       };
+      if (0 == workflowConfig.keys.length) {
+        resolve(0);
+        return;
+      }
 
       // Perform the getBookMetadata map reduce workflow
       global.distribution.uncrawledBookURLs.mr.exec(workflowConfig, (err, bookMetadata) => {
@@ -112,9 +97,13 @@ function executeGetBookMetadataWorkflow(config) {
           reject(err);
           return;
         }
-
-        // Remove parsed URLs from uncrawledBookURLs
         const crawledBookURLs = bookMetadata.map(Object.keys).flat();
+        if (0 == crawledBookURLs.length) {
+          resolve(0);
+          return;
+        }
+
+        // Remove crawled URLs from uncrawledBookURLs
         let numDeleted = 0;
         crawledBookURLs.forEach((url) => {
           global.distribution.uncrawledBookURLs.store.del(url, () => {

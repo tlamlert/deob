@@ -8,8 +8,15 @@ const mr = function(config) {
     exec: (configuration, nextExecution) => {
       /* Change this with your own exciting Map Reduce code! */
 
+      if (configuration.keys.length == 0) {
+        nextExecution(null, []);
+        return;
+      }
+
       // define the map-reduce service
-      const mrName = 'mr-' + util.id.getSID(configuration);
+      // Note: util.id.getID(configuration.keys) yields the same string for any configuration.
+      // const mrName = 'mr-' + util.id.getID();
+      const mrName = 'mr-' + (+new Date * Math.random()).toString(36).substring(0,6);
       const mrService = configuration;
 
       // metadata

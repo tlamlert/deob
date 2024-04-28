@@ -20,6 +20,7 @@ const getURLs = {};
  * @return [(url, 1), ...]
  */
 getURLs['map'] = (url, _) => {
+  console.log("Got this :", url);
   return new Promise((resolve, reject) => {
     global.https.get(url, {rejectUnauthorized: false}, (res) => {
       // Concatenate all data chunk into page content
@@ -64,10 +65,10 @@ getURLs['map'] = (url, _) => {
  * @return (url, null)
  */
 getURLs['reduce'] = (url, _count) => {
+  console.log("GOT URL: ", url);
   return new Promise((resolve, reject) => {
     // Filter out invalid links
     if (!url || !url.startsWith('https://atlas.cs.brown.edu/data/gutenberg/')) {
-      global.utils.errorLog(new Error('invalid url received'));
       resolve(null);
       return;
     };
@@ -84,26 +85,28 @@ getURLs['reduce'] = (url, _count) => {
     }
 
     // filter out duplicate links
-    const out = {};
-    out[url] = null;
-    crawledDatabase.store.get(url, (err, value) => {
+    crawledDatabase.store.get(url, (err, _) => {
       if (err) {
-        // the url has not been crawled, store in distribution.uncrawledURLs
-        uncrawledDatabase.store.put(url, url, (err, value) => {
+        // the url has not been crawled, store in distribution.uncrawled
+        uncrawledDatabase.store.put(url, url, (err, _) => {
+          const out = {};
+          out[url] = null;
           if (err) {
             // TODO: sometimes the serialized url is not properly escaped
             // and will refer to a file inside a (nested) directory.
-            // We will just ignore the file :| and remove it anyways
+            // This new url won't be stored in the system.
             global.utils.errorLog(err);
-            console.log(url);
             resolve(out);
+            return;
           } else {
-            resolve(out);
+            resolve(null);
+            return;
           }
         });
       } else {
         // the url has been crawled, do nothing
-        resolve(out);
+        resolve(null);
+        return;
       }
     });
   });
@@ -122,6 +125,7 @@ function executeGetURLsWorkflow(config) {
       // TODO: something might be wrong with this
       // if (err && Object.keys(err).length > 0) {
       //   reject(err);
+      //   return;
       // };
 
       // Define the workflow configuration
@@ -132,14 +136,21 @@ function executeGetURLsWorkflow(config) {
         reduce: getURLs['reduce'],
         memory: true,
       };
+      if (0 == pageURLsToCrawl.length) {
+        resolve(0);
+        return;
+      }
+
+      console.log(pageURLsToCrawl);
 
       // Perform the getURLs map reduce workflow
-      global.distribution.uncrawledPageURLs.mr.exec(workflowConfig, (err, _) => {
+      global.distribution.uncrawledPageURLs.mr.exec(workflowConfig, (err, pages) => {
         if (err && Object.keys(err).length > 0) {
           reject(err);
+          return;
         }
 
-        // Remove parsed URLs from uncrawledBookURLs
+        // Remove crawled URLs from uncrawledBookURLs
         let numDeleted = 0;
         pageURLsToCrawl.forEach((url) => {
           global.distribution.uncrawledPageURLs.store.del(url, () => {

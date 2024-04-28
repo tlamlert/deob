@@ -23,7 +23,7 @@ global.utils = utils;
 //          Read config from CLI
 // =======================================
 
-// Usage: ./distribution.js --ip 127.0.0.1 --port 1234 --workers 0.0.0.0,1.1.1.1 --workerPort 8080
+// Usage: ./server.js --ip 127.0.0.1 --port 8080 --workers 127.0.0.1,127.0.0.1 --workerPort 8080,8081
 const args = require('yargs').argv;
 
 // Default configuration
@@ -31,7 +31,7 @@ const serverConfig = {
   ip: '127.0.0.1',
   port: 8080,
   workers: [],
-  workerPorts: 8081,
+  workerPorts: [],
   // List of IP Addr's of workers in the cloud distributed system
   // (ports are hardcoded to be the same)
   // workers can also be a list of local workers
@@ -71,8 +71,6 @@ function readServerConfiguration() {
 // =======================================
 
 const createWorkerAndStorageGroups = function(workers, workerPorts) {
-  console.log('workers: ', workers);
-  console.log('workerPorts: ', workerPorts);
   // Create node group with the given GID
   const createGenericGroup = function(gidString) {
     const genericGroup = {};
@@ -84,12 +82,9 @@ const createWorkerAndStorageGroups = function(workers, workerPorts) {
     const config = {gid: gidString};
 
     return new Promise((resolve) => {
-      console.log('Creating group: ', gidString);
-      console.log('genericGroup: ', genericGroup);
       groupsTemplate(config).put(config, genericGroup, (err, value) => {
-        console.log('err: ', err);
-        console.log('value: ', value);
-        if (Object.keys(err).length > 0) {
+        // TODO: Need to handle if not all workers are up
+        if (err && Object.keys(err).length > 0) {
           console.error('err: ', err);
         } else {
           console.log('Group deployed! ', gidString);
@@ -98,8 +93,6 @@ const createWorkerAndStorageGroups = function(workers, workerPorts) {
       });
     });
   };
-
-  // TODO: Before creating
 
   return Promise.all([
     // uncrawledPageURLs : Responsible for storing uncrawled page URLs
@@ -127,19 +120,19 @@ const createWorkerAndStorageGroups = function(workers, workerPorts) {
 //          Start HTTP Server
 // =======================================
 
-const {startWorkflow, stopWorkflow, workflowStats} = require('./endpoint/workflow.js');
+const {startWorkflow, stopWorkflow, workflowStats, addUrlsToCrawl} = require('./endpoint/workflow.js');
 const {search} = require('./endpoint/search.js');
-const {number} = require('yargs');
 
 const startServer = function(serverConfig, cb = () => { }) {
   console.log(`Starting server on ${serverConfig.ip}:${serverConfig.port}`);
   // Register functions as endpoints. Only synchronous functions
   // or functions that return a Promise can be registered.
   const endpoints = {PUT: {}, GET: {}};
-  endpoints.PUT['/start'] = startWorkflow;
-  endpoints.PUT['/stop'] = stopWorkflow;
-  endpoints.GET['/search'] = search;
-  endpoints.GET['/stats'] = workflowStats;
+  endpoints.PUT['/crawler/start'] = startWorkflow;
+  endpoints.PUT['/crawler/stop'] = stopWorkflow;
+  endpoints.GET['/crawler/stats'] = workflowStats;
+  // endpoints.PUT['/crawler/add-urls'] = addUrlsToCrawl;
+  endpoints.GET['/book/search'] = search;
   endpoints.GET['/'] = () => 'Welcome to the Distributed Search Engine!\n';
 
   // Create a HTTPs server.

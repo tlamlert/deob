@@ -7,21 +7,19 @@ const path = require('path');
 // =======================================
 
 const defaultConfig = {
-  TIME_BETWEEN_JOBS: 1000, // seconds
-  MAX_KEYS_PER_EXECUTION: 10, // number of keys
+  TIME_BETWEEN_JOBS: 1000, // milliseconds
+  MAX_KEYS_PER_EXECUTION: 10, // number of keys per invocation
 };
 
 const {executeGetURLsWorkflow} = require('../workflow/getURLs.js');
-const {
-  executeGetBookMetadataWorkflow,
-} = require('../workflow/getBookMetadata.js');
+const {executeGetBookMetadataWorkflow} = require('../workflow/getBookMetadata.js');
 const {executeIndexingWorkflow} = require('../workflow/index.js');
 
-// TODO: for some reason if you enable all of these, the server will crash
+// The list of workflows to be executed
 const crawlerWorkflows = [
-  // { name: "getURLsWorkflow", exec: executeGetURLsWorkflow },
+  {name: 'getURLsWorkflow', exec: executeGetURLsWorkflow},
   {name: 'getBookMetadataWorkflow', exec: executeGetBookMetadataWorkflow},
-  // {name: 'indexWorkflow', exec: executeIndexingWorkflow},
+  {name: 'indexWorkflow', exec: executeIndexingWorkflow},
 ];
 
 // =======================================
@@ -43,9 +41,9 @@ function startWorkflow() {
     // Set up a recurring job
     const jobID = setInterval(() => {
       // If this workflow is currently running, do nothing
-      // TODO: This doesn't stop the next execution.
       if (isRunning) {
-        return `${workflow.name} is currenly running, skipping this execution`;
+        console.log(`\x1b[31m ${workflow.name}} is currenly running, skipping this execution \x1b[0m`);
+        return;
       }
       isRunning = true;
 
@@ -81,6 +79,10 @@ function stopWorkflow() {
   return 'Crawler workflows have been stopped';
 }
 
+/**
+ * Read crawler statistics from the coordinator.
+ * @returns an object containing various statistics
+ */
 function workflowStats() {
   // TODO: Not the best way to read from file; should read line by line
   const createStatView = function(workflowName) {

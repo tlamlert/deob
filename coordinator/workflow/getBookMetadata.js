@@ -11,13 +11,15 @@
 
 const getBookMetadata = {};
 
+/**
+ * Extract metadata from book page content
+ * and store it in `bookMetadata`
+ * @param {*} url   The book URL to crawl
+ * @param {*} _     The book URL to crawl (ignored)
+ * @returns (url, metadata)
+ */
 getBookMetadata['map'] = (url, _) => {
-  /**
-   * Extract metadata from book page content
-   *  Store metadata in `bookMetadata`
-   *  output: (url, metadata)
-   * */
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     global.https.get(url, {rejectUnauthorized: false}, (res) => {
       // Concatenate all data chunk into page content
       let pageContent = '';

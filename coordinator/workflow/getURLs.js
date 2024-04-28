@@ -11,13 +11,14 @@
 
 const getURLs = {};
 
+/**
+ * Extract URLs from web page content
+ * @param {*} url   The page URL to crawl
+ * @param {*} _     The page URL to crawl (ignored)
+ * @returns [(url, 1), ...]
+ */
 getURLs['map'] = (url, _) => {
-  /**
-   * Extract metadata from book page content
-   *  Store metadata in `bookMetadata`
-   *  output: (url, metadata)
-   * */
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     global.https.get(url, {rejectUnauthorized: false}, (res) => {
       // Concatenate all data chunk into page content
       let pageContent = '';
@@ -26,7 +27,6 @@ getURLs['map'] = (url, _) => {
       });
       res.on('end', () => {
         // convert the given url to a directory
-        // TODO: This is hard-coded
         let base;
         if (!url.endsWith('.txt') && !url.endsWith('/')) {
           base = new global.URL(url + '/');
@@ -52,9 +52,22 @@ getURLs['map'] = (url, _) => {
   });
 };
 
+/**
+ * Store uncrawled URls in `uncrawled<page-type>URLs`
+ * where page-type is either `Page` or `Book`
+ * @param {*} url     The URL to store
+ * @param {*} _       A list of ones equal to the number of occurrences (ignored)
+ * @returns (url, null)
+ */
 getURLs['reduce'] = (url, _count) => {
   return new Promise((resolve, reject) => {
-    console.log('getURLs reduce url: ', url);
+    // Filter out invalid links
+    if (!url || !url.startsWith('https://atlas.cs.brown.edu/data/gutenberg/')) {
+      global.utils.errorLog(new Error('invalid url received'));
+      resolve(null);
+      return;
+    };
+    
     // Determine databases based on file type
     let uncrawledDatabase;
     let crawledDatabase;
@@ -66,39 +79,24 @@ getURLs['reduce'] = (url, _count) => {
       crawledDatabase = global.distribution.crawledPageURLs;
     }
 
-    // Filter out invalid links
-    // TODO: This is hard-coded but it shouldn't be
-    // TODO: We might also want to filter out duplicate links with query for optimization hehe
-    if (!url || !url.startsWith('https://atlas.cs.brown.edu/data/gutenberg/')) {
-      // TODO: Also should not use resolve to return null :(
-      resolve(null);
-      return;
-    };
-
     // filter out duplicate links
     const out = {};
     crawledDatabase.store.get(url, (err, value) => {
-      console.log('err: ', err, value);
-      if (err) { // the url has not been crawled
-        console.log('The url has not been crawled');
-
-        // the url has not been crawled, crawl
+      if (err) {
+        // the url has not been crawled, store in distribution.uncrawledURLs
+        // TODO: if url is too long then this store operation will fail
         uncrawledDatabase.store.put(url, url, (err, value) => {
-          // store in distribution.uncrawledURLs
-          if (err && Object.keys(err).length > 0) {
-            console.log('uncrawledURLs put error');
+          if (err) {
             global.utils.errorLog(err);
-            reject(err);
+            console.log(url);
+            resolve(null);
           } else {
-            // TODO: something value is undefined and that's not good baby
-            console.log('uncrawledURLs put success', value);
             out[url] = null;
             resolve(out);
           }
         });
       } else {
         // the url has been crawled, do nothing
-        console.log('the url has been crawled, do nothing');
         out[url] = null;
         resolve(out);
       }

@@ -7,7 +7,6 @@ const mr = function(config) {
   return {
     exec: (configuration, nextExecution) => {
       /* Change this with your own exciting Map Reduce code! */
-      // console.log('keys; ', configuration.keys);
 
       // define the map-reduce service
       const mrName = 'mr-' + util.id.getSID(configuration);
@@ -163,7 +162,6 @@ const mr = function(config) {
             mapNotifyWorkers(keysByNodeMap, () => {
               const shuffleNotify = {service: mrName, method: 'shuffleNotify'};
               groupService.comm.send([], shuffleNotify, (e, v) => {
-                // console.log('map output: ', v);
                 const reduceNotify = {service: mrName, method: 'reduceNotify'};
                 groupService.comm.send([], reduceNotify, (e, v) => {
                   const result = Object.values(v).flat();

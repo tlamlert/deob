@@ -53,7 +53,7 @@ const mr = function(config) {
         const mapOutput = [];
         keys.forEach((key) => {
           groupService.store.get(key, (e, value) => {
-            Promise.resolve(this.mapper(key, value)).then(((output) => {
+            Promise.resolve(this.mapper(key, value)).then((output) => {
               mapOutput.push(output);
               counter -= 1;
               if (!counter) {
@@ -69,7 +69,7 @@ const mr = function(config) {
                       });
                 }
               }
-            }));
+            });
           });
         });
       };

@@ -40,7 +40,7 @@ test('preprocess oops all periods', (done) => {
   const expected = [];
   expect(result).toEqual(expect.arrayContaining(expected));
   done();
-})
+});
 
 test('preprocess N/A', (done) => {
   const input = 'N/A';
@@ -48,7 +48,7 @@ test('preprocess N/A', (done) => {
   const expected = [];
   expect(result).toEqual(expect.arrayContaining(expected));
   done();
-})
+});
 
 test('preprocess empty string', (done) => {
   const input = '';
@@ -57,7 +57,7 @@ test('preprocess empty string', (done) => {
   const expected = [];
   expect(result).toEqual(expect.arrayContaining(expected));
   done();
-})
+});
 
 test('preprocess not a string', (done) => {
   const input = undefined;
@@ -65,7 +65,7 @@ test('preprocess not a string', (done) => {
   const expected = [];
   expect(result).toEqual(expect.arrayContaining(expected));
   done();
-})
+});
 
 test('generateNgrams', (done) => {
   const input = 'please turn your homework';

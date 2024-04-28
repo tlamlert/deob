@@ -5,7 +5,7 @@
  * https://hackmd.io/I9s_IMAfT4ub5kIkjAwD0w?view#N-Gram-Workflow--Indexing-Workflow-Helen
  */
 
-const workflow = require("../endpoint/workflow");
+const workflow = require('../endpoint/workflow');
 
 // =======================================
 //        Map / Reduce Functions
@@ -16,9 +16,9 @@ const index = {};
 /**
  * Takes a url and corresponding bookMetadata and outputs a list of
  * ngram-url pairs. These pairs are of type list.
- * 
+ *
  * Note: bookMetadata will be 'N/A' if the URL doesn't have metadata
- * 
+ *
  * @param {*} url : website URL
  * @param {*} bookMetadata : String corresponding to url
  * @return List of ngram-url pairs (i.e. [[ngram, url], ...] )
@@ -47,8 +47,8 @@ index['map'] = (url, bookMetadata) => {
 index['reduce'] = (ngram, urls) => {
   return new Promise((resolve) => {
     global.utils.statsLog(
-      `${ngram},${urls}`,
-      `data/stats/ngram.csv`
+        `${ngram},${urls}`,
+        `data/stats/ngram.csv`,
     );
     // Get existing [(url,count), ...] object if it exists
     global.distribution.invertedMetadata.store.get(ngram, (e, oldURLs) => {
@@ -118,9 +118,8 @@ function executeIndexingWorkflow(config) {
       };
 
       if (workflowConfig.keys.length == 0) {
-        reject();
+        reject(new Error('null keys'));
         return;
-        // TODO: if reject must return;
       }
 
       // Perform the mr workflow

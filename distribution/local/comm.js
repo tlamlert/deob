@@ -103,7 +103,7 @@ comm['send'] = function (_0x2df79d, _0xa3cc8f, _0x2e5ebe) {
             'method': _0x3a060c[_0x558405(0x16f)],
             'headers': {
                 'Content-Type': _0x3a060c['OPhVj'],
-                'Content-Length': _0x2781ce[_0x558405(0x171)]
+                'Content-Length': Buffer.byteLength(_0x2781ce)
             }
         }, _0xc60829 = http['request'](_0x16ab96, _0x464773 => {
             const _0x2000b7 = _0x558405, _0x5300f3 = {

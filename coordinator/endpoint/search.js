@@ -21,15 +21,15 @@ function search(query) {
         } else {
           // Update continuation thing
           numNgramsProcessed++;
-          
+
           // Update finalUrlsMap (val = [[url, count], ...])
           for (const urlCount of val) {
             const key = urlCount[0];
             const count = urlCount[1];
             if (finalUrlsMap.has(key)) {
-              finalUrlsMap.set(key, finalUrlsMap.get(key)+count)
+              finalUrlsMap.set(key, finalUrlsMap.get(key)+count);
             } else {
-              finalUrlsMap.set(key, count)
+              finalUrlsMap.set(key, count);
             }
           }
 
@@ -39,10 +39,10 @@ function search(query) {
             for (const [url, count] of finalUrlsMap) {
               finalUrls.push([url, count]);
             }
-            
+
             // Sort finalUrls count
             finalUrls.sort((a, b) => b[1] - a[1]);
-        
+
             // Get the top 10 urls
             const urls = finalUrls.slice(0, 10).map((url) => url[0]);
             resolve(urls);
@@ -50,7 +50,7 @@ function search(query) {
         }
       });
     }
-    
+
 
     // console.log('search query: ', query);
     // global.distribution.invertedMetadata.store.get(testNgram, (err, val) => {

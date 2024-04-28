@@ -4,7 +4,7 @@
 
 const http = require('http');
 const URL = require('url');
-const { JSDOM } = require('jsdom');
+const {JSDOM} = require('jsdom');
 global.URL = URL;
 global.JSDOM = JSDOM;
 
@@ -70,18 +70,18 @@ function readServerConfiguration() {
 //          Initialize groups
 // =======================================
 
-const createWorkerAndStorageGroups = function (workers, workerPorts) {
+const createWorkerAndStorageGroups = function(workers, workerPorts) {
   console.log('workers: ', workers);
   console.log('workerPorts: ', workerPorts);
   // Create node group with the given GID
-  const createGenericGroup = function (gidString) {
+  const createGenericGroup = function(gidString) {
     const genericGroup = {};
 
     workers.forEach((ipAddr, i) => {
-      const neighbor = { ip: ipAddr, port: workerPorts[i] };
+      const neighbor = {ip: ipAddr, port: workerPorts[i]};
       genericGroup[id.getSID(neighbor)] = neighbor;
-    })
-    const config = { gid: gidString };
+    });
+    const config = {gid: gidString};
 
     return new Promise((resolve) => {
       console.log('Creating group: ', gidString);
@@ -99,7 +99,7 @@ const createWorkerAndStorageGroups = function (workers, workerPorts) {
     });
   };
 
-  // TODO: Before creating 
+  // TODO: Before creating
 
   return Promise.all([
     // uncrawledPageURLs : Responsible for storing uncrawled page URLs
@@ -127,15 +127,15 @@ const createWorkerAndStorageGroups = function (workers, workerPorts) {
 //          Start HTTP Server
 // =======================================
 
-const { startWorkflow, stopWorkflow, workflowStats } = require('./endpoint/workflow.js');
-const { search } = require('./endpoint/search.js');
-const { number } = require('yargs');
+const {startWorkflow, stopWorkflow, workflowStats} = require('./endpoint/workflow.js');
+const {search} = require('./endpoint/search.js');
+const {number} = require('yargs');
 
-const startServer = function (serverConfig, cb = () => { }) {
+const startServer = function(serverConfig, cb = () => { }) {
   console.log(`Starting server on ${serverConfig.ip}:${serverConfig.port}`);
   // Register functions as endpoints. Only synchronous functions
   // or functions that return a Promise can be registered.
-  const endpoints = { PUT: {}, GET: {} };
+  const endpoints = {PUT: {}, GET: {}};
   endpoints.PUT['/start'] = startWorkflow;
   endpoints.PUT['/stop'] = stopWorkflow;
   endpoints.GET['/search'] = search;
@@ -164,7 +164,7 @@ const startServer = function (serverConfig, cb = () => { }) {
     console.log('all groups are created');
     // Init uncrawled database
     const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
-    const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/1/1/8/2/11823/11823-8.txt';
+    const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/0/9/9-0.txt';
     global.distribution.uncrawledPageURLs.store.put(pageUrl, pageUrl, () => {
       global.distribution.uncrawledBookURLs.store.put(bookUrl, bookUrl, () => {
         server.listen(serverConfig.port, serverConfig.ip, () => {

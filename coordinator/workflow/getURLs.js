@@ -5,6 +5,8 @@
  * https://hackmd.io/I9s_IMAfT4ub5kIkjAwD0w?both#GetBookMetadata-Workflow-orig-getText-Mandy
  */
 
+const workflow = require('.');
+
 // =======================================
 //        Map / Reduce Functions
 // =======================================
@@ -15,7 +17,7 @@ const getURLs = {};
  * Extract URLs from web page content
  * @param {*} url   The page URL to crawl
  * @param {*} _     The page URL to crawl (ignored)
- * @returns [(url, 1), ...]
+ * @return [(url, 1), ...]
  */
 getURLs['map'] = (url, _) => {
   return new Promise((resolve, reject) => {
@@ -46,7 +48,9 @@ getURLs['map'] = (url, _) => {
           out.push(o);
         });
 
-        global.distribution.crawledPageURLs.store.put(url, url, ()=>{resolve(out);});
+        global.distribution.crawledPageURLs.store.put(url, url, ()=>{
+          resolve(out);
+        });
       });
     });
   });
@@ -57,7 +61,7 @@ getURLs['map'] = (url, _) => {
  * where page-type is either `Page` or `Book`
  * @param {*} url     The URL to store
  * @param {*} _       A list of ones equal to the number of occurrences (ignored)
- * @returns (url, null)
+ * @return (url, null)
  */
 getURLs['reduce'] = (url, _count) => {
   return new Promise((resolve, reject) => {
@@ -67,7 +71,7 @@ getURLs['reduce'] = (url, _count) => {
       resolve(null);
       return;
     };
-    
+
     // Determine databases based on file type
     let uncrawledDatabase;
     let crawledDatabase;
@@ -81,23 +85,24 @@ getURLs['reduce'] = (url, _count) => {
 
     // filter out duplicate links
     const out = {};
+    out[url] = null;
     crawledDatabase.store.get(url, (err, value) => {
       if (err) {
         // the url has not been crawled, store in distribution.uncrawledURLs
-        // TODO: if url is too long then this store operation will fail
         uncrawledDatabase.store.put(url, url, (err, value) => {
           if (err) {
+            // TODO: sometimes the serialized url is not properly escaped
+            // and will refer to a file inside a (nested) directory.
+            // We will just ignore the file :| and remove it anyways
             global.utils.errorLog(err);
             console.log(url);
-            resolve(null);
+            resolve(out);
           } else {
-            out[url] = null;
             resolve(out);
           }
         });
       } else {
         // the url has been crawled, do nothing
-        out[url] = null;
         resolve(out);
       }
     });
@@ -105,7 +110,7 @@ getURLs['reduce'] = (url, _count) => {
 };
 
 // =======================================
-//          getBookMetadata Job
+//          getURLs Job
 // =======================================
 
 function executeGetURLsWorkflow(config) {
@@ -128,7 +133,7 @@ function executeGetURLsWorkflow(config) {
         memory: true,
       };
 
-      // Perform the getBookMetadata map reduce workflow
+      // Perform the getURLs map reduce workflow
       global.distribution.uncrawledPageURLs.mr.exec(workflowConfig, (err, _) => {
         if (err && Object.keys(err).length > 0) {
           reject(err);

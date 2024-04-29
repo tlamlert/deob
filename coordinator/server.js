@@ -14,6 +14,7 @@ global.JSDOM = JSDOM;
 
 const groupsTemplate = require('../distribution/all/groups');
 const distribution = require('../distribution.js');
+const {consistentHash} = require('../distribution/util/id.js')
 const utils = require('./utils.js');
 const id = distribution.util.id;
 global.distribution = distribution;
@@ -84,7 +85,7 @@ const createWorkerAndStorageGroups = function(workers, workerPorts) {
       const neighbor = {ip: ipAddr, port: workerPorts[i]};
       genericGroup[id.getSID(neighbor)] = neighbor;
     });
-    const config = {gid: gidString};
+    const config = {gid: gidString, hash: consistentHash};
 
     return new Promise((resolve) => {
       groupsTemplate(config).put(config, genericGroup, (err, value) => {

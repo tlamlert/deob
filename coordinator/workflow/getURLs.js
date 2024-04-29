@@ -45,7 +45,7 @@ getURLs['map'] = (url, _) => {
         let out = [];
         rawLinks.forEach((link) => {
           let o = {};
-          o[new global.URL(link, base).href] = 1;
+          o[new global.URL(link, base).href.split('?')[0]] = 1;
           out.push(o);
         });
 
@@ -140,8 +140,6 @@ function executeGetURLsWorkflow(config) {
         resolve(0);
         return;
       }
-
-      console.log(pageURLsToCrawl);
 
       // Perform the getURLs map reduce workflow
       global.distribution.uncrawledPageURLs.mr.exec(workflowConfig, (err, pages) => {

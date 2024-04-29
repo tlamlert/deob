@@ -24,7 +24,6 @@ const index = {};
  * @return List of ngram-url pairs (i.e. [[ngram, url], ...] )
  */
 index['map'] = (url, bookMetadata) => {
-  console.log(url, bookMetadata);
   const ngrams = global.utils.preprocess(bookMetadata);
   const out = [];
   ngrams.forEach((ngram) => {

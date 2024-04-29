@@ -8,7 +8,7 @@ const path = require('path');
 
 const defaultConfig = {
   TIME_BETWEEN_JOBS: 1000, // milliseconds
-  MAX_KEYS_PER_EXECUTION: 10, // number of keys per invocation
+  MAX_KEYS_PER_EXECUTION: 35, // number of keys per invocation
 };
 
 const {executeGetURLsWorkflow} = require('../workflow/getURLs.js');

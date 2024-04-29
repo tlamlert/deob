@@ -79,15 +79,3 @@ $ curl http://169.254.169.254/latest/meta-data/local-ipv4
 # The private IP address is available via:
 $ curl http://169.254.169.254/latest/meta-data/public-ipv4
 ```
-
-```js
-function main() {
-  console.log("Hello world!");
-}
-```
-
-```python
-def main():
-    print("Hello world!")
-```
-

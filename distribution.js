@@ -7,11 +7,11 @@ global.nodeConfig = global.nodeConfig || {
   ip: '127.0.0.1',
   port: 8080,
   onStart: () => {
-    console.log(`
-    sid: ${global.moreStatus.sid}
-    ip: ${global.nodeConfig.ip}
-    port: ${global.nodeConfig.port}`
-    );
+    // console.log(`
+    // sid: ${global.moreStatus.sid}
+    // ip: ${global.nodeConfig.ip}
+    // port: ${global.nodeConfig.port}`
+    // );
   },
   neighbors: [], // List of IP Addr's of other nodes (ports are hardcoded to be the same)
 };

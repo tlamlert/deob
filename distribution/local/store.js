@@ -37,7 +37,7 @@ store.put = function (val, configuration, callback) {
         if (e) {
             callback(new Error(`[${global.moreStatus.sid}]: Error saving ${configuration.key} in ${configuration.gid} in file ${filename}`), null);
         } else {
-            console.log(`[${global.moreStatus.sid}]: put ${configuration.key} in ${configuration.gid} -> ${val}`);
+            // console.log(`[${global.moreStatus.sid}]: put ${configuration.key} in ${configuration.gid} -> ${val}`);
             callback(null, val);
         }
     })
@@ -68,7 +68,7 @@ store.get = function (configuration, callback) {
                     }
                 }
 
-                console.log(`[${global.moreStatus.sid}]: get ${keys.length} keys in ${configuration.gid}`);
+                // console.log(`[${global.moreStatus.sid}]: get ${keys.length} keys in ${configuration.gid}`);
                 callback(null, keys);
             }
         });
@@ -85,7 +85,7 @@ store.get = function (configuration, callback) {
                 let serialized = bytes.toString();
                 try {
                     let state = serialization.deserialize(serialized);
-                    console.log(`[${global.moreStatus.sid}]: get ${configuration.key} in ${configuration.gid} in file ${filename}`);
+                    // console.log(`[${global.moreStatus.sid}]: get ${configuration.key} in ${configuration.gid} in file ${filename}`);
                     callback(null, state);
                 } catch (e) {
                     console.error(`[${global.moreStatus.sid}]: Error deserializing ${configuration.key} in ${configuration.gid}`);

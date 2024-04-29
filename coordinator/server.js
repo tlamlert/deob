@@ -73,9 +73,6 @@ function readServerConfiguration() {
 
 const createWorkerAndStorageGroups = function(workers, workerPorts) {
   console.log('Creating worker and storage groups...');
-  console.log('workers: ', workers);
-  console.log('workerPorts: ', workerPorts);
-
 
   // Create node group with the given GID
   const createGenericGroup = function(gidString) {
@@ -160,7 +157,6 @@ const startServer = function(serverConfig, cb = () => { }) {
 
   // Create worker and storage groups.
   createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPorts).then(() => {
-    console.log('all groups are created');
     // Init uncrawled database
     const pageUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
     const bookUrl = 'https://atlas.cs.brown.edu/data/gutenberg/0/9/9-0.txt';

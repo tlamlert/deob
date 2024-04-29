@@ -20,7 +20,6 @@ const getURLs = {};
  * @return [(url, 1), ...]
  */
 getURLs['map'] = (url, _) => {
-  console.log("Got this :", url);
   return new Promise((resolve, reject) => {
     global.https.get(url, {rejectUnauthorized: false}, (res) => {
       // Concatenate all data chunk into page content
@@ -65,7 +64,6 @@ getURLs['map'] = (url, _) => {
  * @return (url, null)
  */
 getURLs['reduce'] = (url, _count) => {
-  console.log("GOT URL: ", url);
   return new Promise((resolve, reject) => {
     // Filter out invalid links
     if (!url || !url.startsWith('https://atlas.cs.brown.edu/data/gutenberg/')) {

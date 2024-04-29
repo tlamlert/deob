@@ -65,21 +65,6 @@ function search(query) {
         }
       });
     }
-
-    // console.log('search query: ', query);
-    // global.distribution.invertedMetadata.store.get(testNgram, (err, val) => {
-    //   console.log('err: ', err);
-    //   if (err) {
-    //     resolve(err);
-    //   } else {
-    //     // res: [(url, count), ...]
-    //     // Sort by count
-    //     val.sort((a, b) => b[1] - a[1]);
-    //     // Get the top 10 urls
-    //     const urls = val.slice(0, 10).map((url) => url[0]);
-    //     resolve(urls);
-    //   }
-    // });
   });
 }
 

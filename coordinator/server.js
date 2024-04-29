@@ -71,6 +71,11 @@ function readServerConfiguration() {
 // =======================================
 
 const createWorkerAndStorageGroups = function(workers, workerPorts) {
+  console.log('Creating worker and storage groups...');
+  console.log('workers: ', workers);
+  console.log('workerPorts: ', workerPorts);
+
+
   // Create node group with the given GID
   const createGenericGroup = function(gidString) {
     const genericGroup = {};
@@ -174,7 +179,7 @@ if (require.main === module) {
   // Read server configuration from command line
   const err = readServerConfiguration();
   if (err) {
-    console.err(err);
+    console.error(err);
   }
 
   // Http server providing user interface

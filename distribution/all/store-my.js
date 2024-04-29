@@ -18,7 +18,6 @@ function boilerplate(key, context, method, args, callback) {
             const selectedNode = nidsToNodes[selectedNID];
             if (selectedNode) {
                 local.comm.send(args, {
-                    node: selectedNode,
                     service: 'store',
                     method: method,
                 }, callback);
@@ -35,9 +34,6 @@ const store = (config) => {
     context.hash = config.hash || util.id.naiveHash;
     return {
         put: (val, key, callback) => {
-            if (!key) {
-                key = util.id.getID(val);
-            }
             callback = callback || function () { };
             const configuration = {
                 key: key,
@@ -57,30 +53,13 @@ const store = (config) => {
                 key: key,
                 gid: context.gid,
             };
-            if (!key) {
-                // get all (so have to comm to all nodes)
-                global.distribution[context.gid].comm.send(
-                    [configuration],
-                    {
-                        service: 'store',
-                        method: 'get',
-                    }, (e, v) => {
-                        if (v) {
-                            v = Object.values(v).flat(Infinity);
-                        }
-                        callback(e, v);
-
-                    }
-                )
-            } else {
-                boilerplate(
-                    key,
-                    context,
-                    'get',
-                    [configuration],
-                    callback
-                );
-            }
+            boilerplate(
+                key,
+                context,
+                'get',
+                [configuration],
+                callback
+            );
         },
         del: (key, callback) => {
             callback = callback || function () { };

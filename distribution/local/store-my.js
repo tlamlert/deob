@@ -35,9 +35,8 @@ store.put = function (val, configuration, callback) {
     filename = `${storeDir}/s-${global.moreStatus.sid}/${configuration.gid}-${filename}`;
     fs.writeFile(filename, serialized, (e) => {
         if (e) {
-            callback(new Error(`[${global.moreStatus.sid}]: Error saving ${configuration.key} in ${configuration.gid} in file ${filename}`), null);
+            callback(new Error('Failed to write to store'), null);
         } else {
-            console.log(`[${global.moreStatus.sid}]: put ${configuration.key} in ${configuration.gid} -> ${val}`);
             callback(null, val);
         }
     })
@@ -48,31 +47,21 @@ store.get = function (configuration, callback) {
     configuration = normalize(configuration);
     configuration.gid = configuration.gid || 'local';
     if (!configuration.key) {
-        // get all keys that starts with gid
+        // get all keys if key is not specified
         fs.readdir(`${storeDir}/s-${global.moreStatus.sid}`, (e, files) => {
             if (e) {
-                callback(e, null);
+                callback(new Error(`[${global.moreStatus.sid}]: error reading all keys`), null);
             } else {
-                // let keys = files.map((file) => {
-                //     if (file.split('-')[0] === configuration.gid) {
-                //         return file.split('-')[1];
-                //     }
-                // });
                 let keys = [];
                 for (let i = 0; i < files.length; i++) {
-                    if (files[i].split('-')[0] === configuration.gid) {
-                        const filename = files[i].split('-')[1]
-                        // decode base64
-                        const key = Buffer.from(filename, 'base64').toString('ascii');
-                        keys.push(key);
-                    }
+                    let key = files[i].split('-');
+                    key = key[key.length - 1];
+                    key = Buffer.from(key, 'base64').toString();
+                    keys.push(key);
                 }
-
-                console.log(`[${global.moreStatus.sid}]: get ${keys.length} keys in ${configuration.gid}`);
                 callback(null, keys);
             }
         });
-
         return;
     } else {
         let filename = Buffer.from(configuration.key).toString('base64');
@@ -83,15 +72,8 @@ store.get = function (configuration, callback) {
                 callback(new Error(`[${global.moreStatus.sid}]: Key ${configuration.gid}/${configuration.key} not found`), null);
             } else {
                 let serialized = bytes.toString();
-                try {
-                    let state = serialization.deserialize(serialized);
-                    console.log(`[${global.moreStatus.sid}]: get ${configuration.key} in ${configuration.gid} in file ${filename}`);
-                    callback(null, state);
-                } catch (e) {
-                    console.error(`[${global.moreStatus.sid}]: Error deserializing ${configuration.key} in ${configuration.gid}`);
-                    throw e;
-                }
-
+                let state = serialization.deserialize(serialized);
+                callback(null, state);
             }
         });
     }

@@ -121,7 +121,7 @@ function workflowStats() {
     // Gather workflow statistics from `data/stats/...`
     const errorpath = path.join(__dirname, `../data/error/${workflowName}.txt`);
     if (fs.existsSync(errorpath)) {
-      const error = fs.toString('utf8').readFileSync(errorpath);
+      const error = fs.readFileSync(errorpath).toString('utf8');
       numberErrors = error.split('\n').length;
     }
 

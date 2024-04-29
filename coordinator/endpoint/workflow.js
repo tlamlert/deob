@@ -8,7 +8,7 @@ const path = require('path');
 
 const defaultConfig = {
   TIME_BETWEEN_JOBS: 1000, // milliseconds
-  MAX_KEYS_PER_EXECUTION: 10, // number of keys per invocation
+  MAX_KEYS_PER_EXECUTION: 35, // number of keys per invocation
 };
 
 const {executeGetURLsWorkflow} = require('../workflow/getURLs.js');
@@ -121,7 +121,7 @@ function workflowStats() {
     // Gather workflow statistics from `data/stats/...`
     const errorpath = path.join(__dirname, `../data/error/${workflowName}.txt`);
     if (fs.existsSync(errorpath)) {
-      const error = fs.toString('utf8').readFileSync(errorpath);
+      const error = fs.readFileSync(errorpath).toString('utf8');
       numberErrors = error.split('\n').length;
     }
 

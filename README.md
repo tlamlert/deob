@@ -41,7 +41,7 @@ sudo apt install npm
 shell1 (worker): `node distribution.js --port 8081`
 shell2 (coordinator): `node ./coordinator/server.js --workers 127.0.0.1 --workerPorts 8081`
 shell3 (client): `curl -X PUT -d "" 127.0.0.1:8080/crawler/start`
-query: `curl -X GET -d "" "127.0.0.1:8080/search?q=constitution“` 
+query: `curl -X GET -d "" "127.0.0.1:8080/book/search?q=constitution"` 
 <!-- note that you need to stick it through some url converter thing if you want to input multiple strings -->
 
 ### Testing locally (Multiple workers)
@@ -79,15 +79,3 @@ $ curl http://169.254.169.254/latest/meta-data/local-ipv4
 # The private IP address is available via:
 $ curl http://169.254.169.254/latest/meta-data/public-ipv4
 ```
-
-```js
-function main() {
-  console.log("Hello world!");
-}
-```
-
-```python
-def main():
-    print("Hello world!")
-```
-

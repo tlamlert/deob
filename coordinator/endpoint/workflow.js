@@ -42,7 +42,7 @@ function startWorkflow() {
     const jobID = setInterval(() => {
       // If this workflow is currently running, do nothing
       if (isRunning) {
-        console.log(`\x1b[31m ${workflow.name}} is currenly running, skipping this execution \x1b[0m`);
+        console.log(`\x1b[31m ${workflow.name} is currenly running, skipping this execution \x1b[0m`);
         return;
       }
       isRunning = true;

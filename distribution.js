@@ -7,7 +7,11 @@ global.nodeConfig = global.nodeConfig || {
   ip: '127.0.0.1',
   port: 8080,
   onStart: () => {
-    console.log('Node started!');
+    console.log(`
+    sid: ${global.moreStatus.sid}
+    ip: ${global.nodeConfig.ip}
+    port: ${global.nodeConfig.port}`
+    );
   },
   neighbors: [], // List of IP Addr's of other nodes (ports are hardcoded to be the same)
 };
@@ -31,9 +35,9 @@ if (args.config) {
   let nodeConfig = util.deserialize(args.config);
   global.nodeConfig.ip = nodeConfig.ip ? nodeConfig.ip : global.nodeConfig.ip;
   global.nodeConfig.port = nodeConfig.port ?
-        nodeConfig.port : global.nodeConfig.port;
+    nodeConfig.port : global.nodeConfig.port;
   global.nodeConfig.onStart = nodeConfig.onStart ?
-        nodeConfig.onStart : global.nodeConfig.onStart;
+    nodeConfig.onStart : global.nodeConfig.onStart;
 }
 
 if (args.neighbors) {
@@ -50,19 +54,19 @@ global.distribution = distribution;
 
 distribution['all'] = {};
 distribution['all'].status =
-    require('./distribution/all/status')({gid: 'all'});
+  require('./distribution/all/status')({ gid: 'all' });
 distribution['all'].comm =
-    require('./distribution/all/comm')({gid: 'all'});
+  require('./distribution/all/comm')({ gid: 'all' });
 distribution['all'].gossip =
-    require('./distribution/all/gossip')({gid: 'all'});
+  require('./distribution/all/gossip')({ gid: 'all' });
 distribution['all'].groups =
-    require('./distribution/all/groups')({gid: 'all'});
+  require('./distribution/all/groups')({ gid: 'all' });
 distribution['all'].routes =
-    require('./distribution/all/routes')({gid: 'all'});
+  require('./distribution/all/routes')({ gid: 'all' });
 distribution['all'].mem =
-    require('./distribution/all/mem')({gid: 'all'});
+  require('./distribution/all/mem')({ gid: 'all' });
 distribution['all'].store =
-    require('./distribution/all/store')({gid: 'all'});
+  require('./distribution/all/store')({ gid: 'all' });
 
 module.exports = global.distribution;
 
@@ -73,8 +77,8 @@ if (require.main === module) {
 
 // libraries for map reduce workflows
 const https = require('https');
-const {URL} = require('url');
-const {JSDOM} = require('jsdom');
+const { URL } = require('url');
+const { JSDOM } = require('jsdom');
 global.https = https;
 global.URL = URL;
 global.JSDOM = JSDOM;

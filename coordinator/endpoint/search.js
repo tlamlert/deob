@@ -27,7 +27,7 @@ function search(query) {
             const key = urlCount[0];
             const count = urlCount[1];
             if (finalUrlsMap.has(key)) {
-              finalUrlsMap.set(key, finalUrlsMap.get(key)+count);
+              finalUrlsMap.set(key, finalUrlsMap.get(key) + count);
             } else {
               finalUrlsMap.set(key, count);
             }
@@ -45,12 +45,26 @@ function search(query) {
 
             // Get the top 10 urls
             const urls = finalUrls.slice(0, 10).map((url) => url[0]);
-            resolve(urls);
+            // resolve(urls);
+            // ----------------------------- Metadata Extra Credit ------------------------//
+            // Get the actual titles for these urls
+            let numRetrieved = 0;
+            let titles = [];
+            urls.forEach((url) => {
+              global.distribution.bookMetadata.store.get(url, (e, title) => {
+                numRetrieved++;
+                titles.push([title, url]); // Note: this pushes back the corresponding title & url pair
+                // We can also easily do regex matching here to grab more specific areas than just the title
+                if (titles.length === urls.length) {
+                  resolve(titles);
+                }
+              });
+            });
+            // ----------------------------- Metadata Extra Credit End ------------------------//
           }
         }
       });
     }
-
 
     // console.log('search query: ', query);
     // global.distribution.invertedMetadata.store.get(testNgram, (err, val) => {

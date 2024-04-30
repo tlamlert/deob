@@ -125,6 +125,14 @@ function executeGetURLsWorkflow(config) {
       //   reject(err);
       //   return;
       // };
+      if (err && Object.keys(err).length > 0) {
+        reject(err);
+        return;
+      }
+      if (uncralwedPageURLs.length == 0) {
+        resolve(0);
+        return;
+      }
 
       // Define the workflow configuration
       const pageURLsToCrawl = uncralwedPageURLs.splice(0, config.MAX_KEYS_PER_EXECUTION);
@@ -134,10 +142,6 @@ function executeGetURLsWorkflow(config) {
         reduce: getURLs['reduce'],
         memory: true,
       };
-      if (0 == pageURLsToCrawl.length) {
-        resolve(0);
-        return;
-      }
 
       // Perform the getURLs map reduce workflow
       global.distribution.uncrawledPageURLs.mr.exec(workflowConfig, (err, pages) => {

@@ -137,6 +137,8 @@ const startServer = function(serverConfig, cb = () => { }) {
   // endpoints.PUT['/crawler/add-urls'] = addUrlsToCrawl;
   endpoints.GET['/book/search'] = search;
   endpoints.GET['/'] = () => 'Welcome to the Distributed Search Engine!\n';
+  endpoints.PUT['/crawler/reset-workers'] = () => new Promise(
+    (resolve) => {createWorkerAndStorageGroups(serverConfig.workers, serverConfig.workerPorts).then(() => resolve('All groups registered'))});
 
   // Create a HTTPs server.
   const server = http.createServer((req, res) => {

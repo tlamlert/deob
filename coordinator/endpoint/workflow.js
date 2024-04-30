@@ -6,15 +6,15 @@ const path = require('path');
 //          Workflow configuration
 // =======================================
 
-const debugConfig = {
+const defaultConfig = {
   TIME_BETWEEN_JOBS: 1000, // milliseconds
   MAX_KEYS_PER_EXECUTION: 35, // number of keys per invocation
 };
 
-const defaultConfig = {
-  TIME_BETWEEN_JOBS: 200, // milliseconds
-  MAX_KEYS_PER_EXECUTION: 100, // number of keys per invocation
-};
+// const defaultConfig = {
+//   TIME_BETWEEN_JOBS: 200, // milliseconds
+//   MAX_KEYS_PER_EXECUTION: 100, // number of keys per invocation
+// };
 
 const {executeGetURLsWorkflow} = require('../workflow/getURLs.js');
 const {executeGetBookMetadataWorkflow} = require('../workflow/getBookMetadata.js');
@@ -67,9 +67,10 @@ function startWorkflow() {
             );
           },
           (err) => {
-          // TODO: Better error handling than just printing it out??
             isRunning = false;
             global.utils.errorLog(err, `data/error/${workflow.name}.txt`);
+            // Stop all workflows since at least one worker is down
+            stopWorkflow();
           },
       );
     }, defaultConfig.TIME_BETWEEN_JOBS);

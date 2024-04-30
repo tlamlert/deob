@@ -77,7 +77,11 @@ function executeGetBookMetadataWorkflow(config) {
       if (err && Object.keys(err).length > 0) {
         reject(err);
         return;
-      };
+      }
+      if (uncralwedBookURLs.length == 0) {
+        resolve(0);
+        return;
+      }
 
       // Define the workflow configuration
       const workflowConfig = {
@@ -86,10 +90,6 @@ function executeGetBookMetadataWorkflow(config) {
         reduce: getBookMetadata['reduce'],
         memory: true,
       };
-      if (0 == workflowConfig.keys.length) {
-        resolve(0);
-        return;
-      }
 
       // Perform the getBookMetadata map reduce workflow
       global.distribution.uncrawledBookURLs.mr.exec(workflowConfig, (err, bookMetadata) => {
@@ -98,7 +98,7 @@ function executeGetBookMetadataWorkflow(config) {
           return;
         }
         const crawledBookURLs = bookMetadata.map(Object.keys).flat();
-        if (0 == crawledBookURLs.length) {
+        if (crawledBookURLs.length == 0) {
           resolve(0);
           return;
         }

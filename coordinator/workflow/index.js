@@ -107,6 +107,10 @@ function executeIndexingWorkflow(config) {
         reject(err);
         return;
       }
+      if (metadatas.length == 0) {
+        resolve(0);
+        return;
+      }
 
       // Workflow configuration
       const workflowConfig = {
@@ -116,29 +120,26 @@ function executeIndexingWorkflow(config) {
         memory: true,
       };
 
-      if (workflowConfig.keys.length == 0) {
-        reject(new Error('null keys'));
-        return;
-      }
-
       // Perform the mr workflow
       global.distribution.bookMetadata.mr.exec(workflowConfig, (err, metadatas) => {
+        // if (err && Object.keys(err).length > 0) {
         if (err) {
           console.error('Indexing workflow error: ' + err);
           reject(err);
-        } else {
-          // Delete processed metadatas
-          const processedMetadatas = metadatas.map(Object.keys).flat();
-          let numDeleted = 0;
-          processedMetadatas.forEach((metadata) => {
-            global.distribution.bookMetadata.store.del(metadata, () => {
-              numDeleted++;
-              if (numDeleted === processedMetadatas.length) {
-                resolve(workflowConfig.keys.length);
-              }
-            });
-          });
+          return;
         }
+        
+        // Delete processed metadatas
+        const processedMetadatas = metadatas.map(Object.keys).flat();
+        let numDeleted = 0;
+        processedMetadatas.forEach((metadata) => {
+          global.distribution.bookMetadata.store.del(metadata, () => {
+            numDeleted++;
+            if (numDeleted === processedMetadatas.length) {
+              resolve(workflowConfig.keys.length);
+            }
+          });
+        });
       });
     });
   });

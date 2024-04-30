@@ -6,15 +6,15 @@ const path = require('path');
 //          Workflow configuration
 // =======================================
 
-const defaultConfig = {
+const debugConfig = {
   TIME_BETWEEN_JOBS: 1000, // milliseconds
-  MAX_KEYS_PER_EXECUTION: 35, // number of keys per invocation
+  MAX_KEYS_PER_EXECUTION: 20, // number of keys per invocation
 };
 
-// const defaultConfig = {
-//   TIME_BETWEEN_JOBS: 200, // milliseconds
-//   MAX_KEYS_PER_EXECUTION: 100, // number of keys per invocation
-// };
+const defaultConfig = {
+  TIME_BETWEEN_JOBS: 200, // milliseconds
+  MAX_KEYS_PER_EXECUTION: 100, // number of keys per invocation
+};
 
 const {executeGetURLsWorkflow} = require('../workflow/getURLs.js');
 const {executeGetBookMetadataWorkflow} = require('../workflow/getBookMetadata.js');

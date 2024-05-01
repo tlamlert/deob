@@ -172,12 +172,8 @@ const mr = function(config) {
                 const reduceNotify = {service: mrName, method: 'reduceNotify'};
                 groupService.comm.send([], reduceNotify, (e, v) => {
                   const result = Object.values(v).flat();
-                  // deregister using routes.del
-
-                  // TODO: DELETING SERVICE CAUSES ERRORS IN FUTURE WORKFLOWS
+                  // Deleting service causes errors in future workflows
                   // groupService.routes.del(mrName, (e, v) => {
-                  //   // // TODO: need to make this work baby
-                  //   // callback(null, result);
                   //   nextExecution(null, result);
                   // });
                   nextExecution(null, result);

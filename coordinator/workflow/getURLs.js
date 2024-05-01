@@ -60,7 +60,7 @@ getURLs['map'] = (url, _) => {
  * Store uncrawled URls in `uncrawled<page-type>URLs`
  * where page-type is either `Page` or `Book`
  * @param {*} url     The URL to store
- * @param {*} _       A list of ones equal to the number of occurrences (ignored)
+ * @param {*} _count  A list of ones equal to the number of occurrences (ignored)
  * @return (url, null)
  */
 getURLs['reduce'] = (url, _count) => {
@@ -120,11 +120,6 @@ function executeGetURLsWorkflow(config) {
   // relevant data on the worker nodes
   return new Promise((resolve, reject) => {
     global.distribution.uncrawledPageURLs.store.get(null, (err, uncralwedPageURLs) => {
-      // TODO: something might be wrong with this
-      // if (err && Object.keys(err).length > 0) {
-      //   reject(err);
-      //   return;
-      // };
       if (err && Object.keys(err).length > 0) {
         reject(err);
         return;

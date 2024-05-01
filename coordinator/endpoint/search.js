@@ -2,9 +2,6 @@
 //          Workflow endpoints
 // =======================================
 
-// TODO: RETURNS LIST OF NGRAMS, NEED TO UPDATE QUERY TO HANDLE ALL OF THEM??
-// CURRENT FIX: JUST TAKE FIRST NGRAM
-// EXAMPLE QUERY : curl -X GET -d "" 127.0.0.1:8080/search?q=june
 function search(query) {
   // e.g. /search?q=hello
   // Get the query from the URL
@@ -45,7 +42,6 @@ function search(query) {
 
             // Get the top 10 urls
             const urls = finalUrls.slice(0, 10).map((url) => url[0]);
-            // resolve(urls);
             // ----------------------------- Metadata Extra Credit ------------------------//
             // Get the actual titles for these urls
             let numRetrieved = 0;

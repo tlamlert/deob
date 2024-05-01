@@ -270,7 +270,6 @@ test('crawler workflow', (done) => {
 });
 
 test('url extraction workflow', (done) => {
-  // TODO: this doesn't work yet
   let m1 = (url, rawData) => {
     // convert the given url to a directory
     if (!url.endsWith('.html') && !url.endsWith('/')) {

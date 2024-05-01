@@ -34,13 +34,26 @@ width = 0.3
 
 # Plotting
 plt.bar(ind, blue_bar , width, label='Latency')
-plt.bar(ind + width, orange_bar, width, label='Throughput')
-# plt.plot(ind, blue_bar , width, label='Latency')
-# plt.plot(ind + width, orange_bar, width, label='Throughput')
+# plt.bar(ind + width, orange_bar, width, label='Throughput')
 
 plt.xlabel('Workflow')
-plt.ylabel('milliseconds')
-plt.title('Performance Evaluation')
+plt.ylabel('Milliseconds per file')
+plt.title('Performance Evaluation (Latency)')
+
+# First argument - A list of positions at which ticks should be placed
+# Second argument -  A list of labels to place at the given locations
+plt.xticks(ind + width / 2, ('getURLsWorkflow', 'getBookMetadataWorkflow', 'indexWorkflow'))
+
+# Finding the best position for legends and putting it
+plt.legend(loc='best')
+plt.show()
+
+#--------------------------------------------------------------------------------------
+plt.bar(ind, orange_bar, width, label='Throughput')
+
+plt.xlabel('Workflow')
+plt.ylabel('Files per second')
+plt.title('Performance Evaluation (Throughput)')
 
 # First argument - A list of positions at which ticks should be placed
 # Second argument -  A list of labels to place at the given locations

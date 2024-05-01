@@ -18,24 +18,35 @@ const getBookMetadata = {};
  * @param {*} _     The book URL to crawl (ignored)
  * @return (url, metadata)
  */
-getBookMetadata['map'] = (url, _) => {
+getBookMetadata["map"] = (url, _) => {
   return new Promise((resolve, reject) => {
     // TODO: execution time might vary
-    global.https.get(url, {rejectUnauthorized: false}, (res) => {
+    global.https.get(url, { rejectUnauthorized: false }, (res) => {
       // Concatenate all data chunk into page content
-      let pageContent = '';
-      res.on('data', (d) => {
+      let pageContent = "";
+      res.on("data", (d) => {
         pageContent += d;
       });
-      res.on('end', () => {
+      res.on("end", () => {
         // Get regex match
-        const regex = /Title:(.*?)(?=Author:)/s;
+        const regexCatalogue = {
+          getTitle: /Title:(.*?)(?=Author:)/s,
+          getAllMetadata: /Title:(.*?)(?=encoding:)/s,
+          all: /.*/,
+        };
+        const REGEX_TYPE = "getTitle";
+        const regex = regexCatalogue[REGEX_TYPE];
         const match = pageContent.match(regex);
 
         let out = {};
+        // console.log("match", match.length, match);
         if (match) {
           // Make the title on one line
-          const title = match[1].trim();
+          let title = match[1];
+          if (REGEX_TYPE === "getTitle") {
+            title = match[0].trim(); //NOTE: this was 1 before... why?
+            // title = match[0].trim().replace(/\\[^\s]|\\r/g, "");
+          }
           out[url] = title;
           // Only store if regex match can be found
           global.distribution.bookMetadata.store.put(title, url, (e, v) => {
@@ -54,11 +65,11 @@ getBookMetadata['map'] = (url, _) => {
 /**
  * Do nothing.
  * Output: (url, metadata)
- * @param {*} key 
- * @param {*} values 
- * @returns 
+ * @param {*} key
+ * @param {*} values
+ * @returns
  */
-getBookMetadata['reduce'] = (key, values) => {
+getBookMetadata["reduce"] = (key, values) => {
   let out = {};
   out[key] = values;
   return out;
@@ -73,48 +84,54 @@ function executeGetBookMetadataWorkflow(config) {
   // Note: This assumes that Crawl was run before such that there exists
   // relevant data on the worker nodes
   return new Promise((resolve, reject) => {
-    global.distribution.uncrawledBookURLs.store.get(null, (err, uncralwedBookURLs) => {
-      if (err && Object.keys(err).length > 0) {
-        reject(err);
-        return;
-      }
-      if (uncralwedBookURLs.length == 0) {
-        resolve(0);
-        return;
-      }
-
-      // Define the workflow configuration
-      const workflowConfig = {
-        keys: uncralwedBookURLs.splice(0, config.MAX_KEYS_PER_EXECUTION),
-        map: getBookMetadata['map'],
-        reduce: getBookMetadata['reduce'],
-        memory: true,
-      };
-
-      // Perform the getBookMetadata map reduce workflow
-      global.distribution.uncrawledBookURLs.mr.exec(workflowConfig, (err, bookMetadata) => {
+    global.distribution.uncrawledBookURLs.store.get(
+      null,
+      (err, uncralwedBookURLs) => {
         if (err && Object.keys(err).length > 0) {
           reject(err);
           return;
         }
-        const crawledBookURLs = bookMetadata.map(Object.keys).flat();
-        if (crawledBookURLs.length == 0) {
+        if (uncralwedBookURLs.length == 0) {
           resolve(0);
           return;
         }
 
-        // Remove crawled URLs from uncrawledBookURLs
-        let numDeleted = 0;
-        crawledBookURLs.forEach((url) => {
-          global.distribution.uncrawledBookURLs.store.del(url, () => {
-            numDeleted++;
-            if (numDeleted === crawledBookURLs.length) {
-              resolve(crawledBookURLs.length);
+        // Define the workflow configuration
+        const workflowConfig = {
+          keys: uncralwedBookURLs.splice(0, config.MAX_KEYS_PER_EXECUTION),
+          map: getBookMetadata["map"],
+          reduce: getBookMetadata["reduce"],
+          memory: true,
+        };
+
+        // Perform the getBookMetadata map reduce workflow
+        global.distribution.uncrawledBookURLs.mr.exec(
+          workflowConfig,
+          (err, bookMetadata) => {
+            if (err && Object.keys(err).length > 0) {
+              reject(err);
+              return;
             }
-          });
-        });
-      });
-    });
+            const crawledBookURLs = bookMetadata.map(Object.keys).flat();
+            if (crawledBookURLs.length == 0) {
+              resolve(0);
+              return;
+            }
+
+            // Remove crawled URLs from uncrawledBookURLs
+            let numDeleted = 0;
+            crawledBookURLs.forEach((url) => {
+              global.distribution.uncrawledBookURLs.store.del(url, () => {
+                numDeleted++;
+                if (numDeleted === crawledBookURLs.length) {
+                  resolve(crawledBookURLs.length);
+                }
+              });
+            });
+          }
+        );
+      }
+    );
   });
 }
 

@@ -8,7 +8,7 @@ import numpy as np
 
 # Total number of files 107386
 # Numbers of pairs of bars you want
-N = 3
+N = 5
 
 x = np.array([1, 5])
 
@@ -44,8 +44,9 @@ plt.plot(x, y_latency_getBookMetadataWorkflow, label='getBookMetadataWorkflow', 
 plt.plot(x, y_latency_indexWorkflow, label='indexWorkflow', marker='.')
 
 plt.xlabel('# nodes')
-plt.ylabel('milliseconds')
+plt.ylabel('Milliseconds per file')
 plt.title('Scalability Latency Evaluation')
+plt.xticks(np.arange(1, N+1, 1))
 
 # Finding the best position for legends and putting it
 plt.legend(loc='best')
@@ -58,8 +59,10 @@ plt.plot(x, y_throughput_getBookMetadataWorkflow, label='getBookMetadataWorkflow
 plt.plot(x, y_throughput_indexWorkflow, label='indexWorkflow', marker='.')
 
 plt.xlabel('# nodes')
-plt.ylabel('# pages')
+plt.ylabel('Files per second')
 plt.title('Scalability Throughput Evaluation')
+plt.xticks(np.arange(1, N+1, 1))
+
 
 # Finding the best position for legends and putting it
 plt.legend(loc='best')
